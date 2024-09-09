@@ -26,6 +26,8 @@ namespace GNW2.GameManager
 
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
         {
+            Debug.Log($"Player {player} joined. IsServer: {runner.IsServer}, IsLocalPlayer: {player == runner.LocalPlayer}");
+
             if (runner.IsServer)
             {
                 Vector3 customLocation = new Vector3(1 * runner.SessionInfo.PlayerCount, 0, 0);
@@ -34,6 +36,24 @@ namespace GNW2.GameManager
                 _spawnedPlayers.Add(player, playerNetworkObject);
                 ChangePlatformColor();
             }
+
+            /*Vector3 customLocation = new Vector3(1 * runner.SessionInfo.PlayerCount, 0, 0);
+            NetworkObject playerNetworkObject = runner.Spawn(_playerPrefab, customLocation, Quaternion.identity);
+
+            if (runner.IsServer && player == runner.LocalPlayer)
+            {
+                playerNetworkObject.AssignInputAuthority(player);
+                Debug.Log("Forcefully assigned input authority to host (local player).");
+            }
+            else if (!runner.IsServer)
+            {
+                // Assign authority for the remote player if it’s not the server
+                playerNetworkObject.AssignInputAuthority(player);
+                Debug.Log($"Assigned input authority to remote player {player}.");
+            }
+
+            _spawnedPlayers.Add(player, playerNetworkObject);
+            ChangePlatformColor();*/
         }
 
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
