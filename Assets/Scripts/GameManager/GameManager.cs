@@ -18,6 +18,8 @@ namespace GNW2.GameManager
         [SerializeField] private GameObject _platform;
 
         private Dictionary<PlayerRef, NetworkObject> _spawnedPlayers = new Dictionary<PlayerRef, NetworkObject>();
+
+        private bool _isMouseButton0Pressed;
         
         #region NetworkRunner Callbacks
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
@@ -36,24 +38,6 @@ namespace GNW2.GameManager
                 _spawnedPlayers.Add(player, playerNetworkObject);
                 ChangePlatformColor();
             }
-
-            /*Vector3 customLocation = new Vector3(1 * runner.SessionInfo.PlayerCount, 0, 0);
-            NetworkObject playerNetworkObject = runner.Spawn(_playerPrefab, customLocation, Quaternion.identity);
-
-            if (runner.IsServer && player == runner.LocalPlayer)
-            {
-                playerNetworkObject.AssignInputAuthority(player);
-                Debug.Log("Forcefully assigned input authority to host (local player).");
-            }
-            else if (!runner.IsServer)
-            {
-                // Assign authority for the remote player if it’s not the server
-                playerNetworkObject.AssignInputAuthority(player);
-                Debug.Log($"Assigned input authority to remote player {player}.");
-            }
-
-            _spawnedPlayers.Add(player, playerNetworkObject);
-            ChangePlatformColor();*/
         }
 
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
@@ -89,6 +73,7 @@ namespace GNW2.GameManager
             {
                 data.Jump = true;
             }
+            data.buttons.Set(button: NetworkInputData.MOUSEBUTTON0, _isMouseButton0Pressed);
 
             input.Set(data);
 
@@ -121,6 +106,11 @@ namespace GNW2.GameManager
 
         public void OnSceneLoadStart(NetworkRunner runner){ }
         #endregion
+
+        private void Update()
+        {
+            _isMouseButton0Pressed = UnityEngine.Input.GetMouseButton(0);
+        }
 
         async void StartGame(GameMode mode)
         {
