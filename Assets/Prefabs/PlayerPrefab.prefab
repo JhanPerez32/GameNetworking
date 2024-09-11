@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15e607f583723f648891cb09393238c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerCamera: {fileID: 0}
+  playerCamera: {fileID: 7666381244761532469}
   speed: 5
   jumpForce: 10
   jumpCooldown: 1.5
@@ -128,7 +128,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8817091026869761780}
   - component: {fileID: 7666381244761532469}
-  - component: {fileID: 2933223764234672141}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -202,14 +201,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &2933223764234672141
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1432488314615738996}
-  m_Enabled: 1
 --- !u!1 &4898120559641280728
 GameObject:
   m_ObjectHideFlags: 0

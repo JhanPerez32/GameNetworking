@@ -31,22 +31,13 @@ namespace GNW2.Player
         private void Awake()
         {
             _cc = GetComponent<NetworkCharacterController>();
-
-            if (playerCamera == null)
-            {
-                playerCamera = GetComponentInChildren<Camera>();
-            }
-
-            if (playerCamera == null)
-            {
-                Debug.LogError("Player Camera not found in child objects!");
-            }
         }
 
         public override void FixedUpdateNetwork()
         {
             if (GetInput(out NetworkInputData data))
             {
+                //Jumping
                 data.Direction.Normalize();
                 _cc.Move(speed *data.Direction * Runner.DeltaTime);
 
@@ -56,6 +47,8 @@ namespace GNW2.Player
                     lastJumpTime = Time.time;
                 }
 
+
+                //Bullet Firing
                 if (!HasInputAuthority || !fireDelayTime.ExpiredOrNotRunning(Runner)) return;
 
                 if (data.Direction.sqrMagnitude > 0)
@@ -66,7 +59,8 @@ namespace GNW2.Player
                 if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
                 {
                     fireDelayTime = TickTimer.CreateFromSeconds(Runner, fireRate);
-                    Runner.Spawn(bulletPrefab, transform.position + _bulletSpawnLocation, Quaternion.LookRotation(_bulletSpawnLocation), Object.InputAuthority, OnBulletSpawned);
+                    Runner.Spawn(bulletPrefab, transform.position + _bulletSpawnLocation, 
+                        Quaternion.LookRotation(_bulletSpawnLocation), Object.InputAuthority, OnBulletSpawned);
                     
                 }
             }
@@ -76,6 +70,10 @@ namespace GNW2.Player
         {
             bullet.GetComponent<BulletProjectile>()?.Init();
         }
+
+
+
+
 
         public override void Spawned()
         {
