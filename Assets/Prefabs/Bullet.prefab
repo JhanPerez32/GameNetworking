@@ -189,3 +189,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletSpeed: 10
   lifeTime: 2
+  dyingTime: 0.35
+  normalMaterial: {fileID: 2100000, guid: 102b59edcfca2b24bbddb7db5c2900ed, type: 2}
+  dyingMaterial: {fileID: 2100000, guid: 76a06741982512c489e015f7980fd4d5, type: 2}
+  bulletRenderer: {fileID: 27908382414584760}

@@ -6,6 +6,7 @@ using GNW2.Input;
 using GNW2.Projectile;
 using UnityEngine;
 using UnityEngine.Windows;
+using TMPro;
 
 namespace GNW2.Player
 {
@@ -23,6 +24,8 @@ namespace GNW2.Player
         [SerializeField] BulletProjectile bulletPrefab;
         [SerializeField] float fireRate = 0.1f;
         [Networked] private TickTimer fireDelayTime { get; set; }
+
+        [SerializeField] TextMeshProUGUI notifUI;
 
 
         private Vector3 _bulletSpawnLocation = Vector3.forward * 2;
@@ -63,6 +66,18 @@ namespace GNW2.Player
                         Quaternion.LookRotation(_bulletSpawnLocation), Object.InputAuthority, OnBulletSpawned);
                     
                 }
+            }
+        }
+
+        private void Update()
+        {
+            if (fireDelayTime.ExpiredOrNotRunning(Runner))
+            {
+                notifUI.text = "Ready to Fire!";
+            }
+            else
+            {
+                notifUI.text = "";
             }
         }
 
