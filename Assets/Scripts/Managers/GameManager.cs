@@ -33,8 +33,6 @@ namespace GNW2.GameManager
 
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
         {
-            Debug.Log($"Player {player} joined. IsServer: {runner.IsServer}, IsLocalPlayer: {player == runner.LocalPlayer}");
-
             if (runner.IsServer)
             {
                 Vector3 customLocation = new Vector3(1 * runner.SessionInfo.PlayerCount, 0, 0);
@@ -114,23 +112,27 @@ namespace GNW2.GameManager
 
         private void Start()
         {
-            if (hostGameButton != null)
+            if (_runner == null)
             {
-                hostGameButton.onClick.AddListener(() =>
+                if (hostGameButton != null)
                 {
-                    StartGame(GameMode.Host);
-                    HideUI();
-                });
-            }
+                    hostGameButton.onClick.AddListener(() =>
+                    {
+                        StartGame(GameMode.Host);
+                        HideUI();
+                    });
+                }
 
-            if (joinGameButton != null)
-            {
-                joinGameButton.onClick.AddListener(() =>
+                if (joinGameButton != null)
                 {
-                    StartGame(GameMode.Client);
-                    HideUI();
-                });
+                    joinGameButton.onClick.AddListener(() =>
+                    {
+                        StartGame(GameMode.Client);
+                        HideUI();
+                    });
+                }
             }
+                
         }
 
         void HideUI()
@@ -140,6 +142,7 @@ namespace GNW2.GameManager
                 UICanvas.SetActive(false);
             }
         }
+
         private void Update()
         {
             _isMouseButton0Pressed = UnityEngine.Input.GetMouseButton(0);

@@ -20,14 +20,19 @@ namespace GNW2.Projectile
         [SerializeField] Material dyingMaterial;
         [SerializeField] Renderer bulletRenderer;
 
+        private NetworkObject owner;
+        private Transform target;
+
         private void Start()
         {
             bulletRenderer.material = normalMaterial;
         }
 
-        public void Init()
+        public void Init(NetworkObject bulletOwner)
         {
             life = TickTimer.CreateFromSeconds(Runner, lifeTime);
+            owner = bulletOwner;
+            FindNearestTarget();
         }
 
         public override void FixedUpdateNetwork()
@@ -49,6 +54,31 @@ namespace GNW2.Projectile
                 else
                 {
                     bulletRenderer.material = normalMaterial;
+                }
+            }
+        }
+
+        private void FindNearestTarget()
+        {
+            NetworkObject[] networkObjects = FindObjectsOfType<NetworkObject>();
+            List<NetworkObject> potentialTargets = new List<NetworkObject>();
+
+            foreach (NetworkObject obj in networkObjects)
+            {
+                if (obj != owner && obj.HasStateAuthority)
+                {
+                    potentialTargets.Add(obj);
+                }
+            }
+
+            float minDistance = Mathf.Infinity;
+            foreach (NetworkObject potentialTarget in potentialTargets)
+            {
+                float distance = Vector3.Distance(transform.position, potentialTarget.transform.position);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    target = potentialTarget.transform;
                 }
             }
         }

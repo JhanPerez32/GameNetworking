@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using Fusion;
 using GNW2.Input;
 using GNW2.Projectile;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Windows;
-using TMPro;
 
 namespace GNW2.Player
 {
@@ -14,7 +14,7 @@ namespace GNW2.Player
     {
         private NetworkCharacterController _cc;
 
-        public Camera playerCamera;
+        //public Camera playerCamera;
 
         [SerializeField] private float speed = 5f;
         [SerializeField] private float jumpForce = 5f;
@@ -25,25 +25,65 @@ namespace GNW2.Player
         [SerializeField] float fireRate = 0.1f;
         [Networked] private TickTimer fireDelayTime { get; set; }
 
-        [SerializeField] TextMeshProUGUI notifUI;
-
 
         private Vector3 _bulletSpawnLocation = Vector3.forward * 2;
 
+        private TextMeshProUGUI notifUI;
+        [SerializeField] private GameObject playerUIPrefab;
 
         private void Awake()
         {
             _cc = GetComponent<NetworkCharacterController>();
+
+            /*if (Object.HasInputAuthority)
+            {
+                if (playerUIPrefab == null)
+                {
+                    Debug.LogError("Player UI Prefab is not assigned in the Inspector.");
+                    return;
+                }
+
+                GameObject playerUI = Instantiate(playerUIPrefab);
+                notifUI = playerUI.GetComponentInChildren<TextMeshProUGUI>();
+
+                if (notifUI == null)
+                {
+                    Debug.LogError("TextMeshProUGUI component not found in the instantiated prefab.");
+                }
+
+            }*/
+
+            GameObject canvas = GameObject.Find("PlayerCanvas");
+            if (canvas != null)
+            {
+                notifUI = canvas.GetComponentInChildren<TextMeshProUGUI>();
+            }
+            else
+            {
+                Debug.LogError("PlayerCanvas not found. Make sure it is present in the scene.");
+            }
         }
 
         public override void FixedUpdateNetwork()
         {
-            if (GetInput(out NetworkInputData data))
+            if (Object.HasInputAuthority && notifUI != null)
             {
-                //Jumping
+                if (fireDelayTime.ExpiredOrNotRunning(Runner))
+                {
+                    notifUI.text = "Ready to Fire!";
+                }
+                else
+                {
+                    notifUI.text = "";
+                }
+            }
+
+            if (GetInput(out NetworkInputData data))
+            {   
                 data.Direction.Normalize();
                 _cc.Move(speed *data.Direction * Runner.DeltaTime);
 
+                //Jumping
                 if (data.Jump && _cc.Grounded && Time.time >= lastJumpTime + jumpCooldown)
                 {
                     _cc.Jump(overrideImpulse: jumpForce);
@@ -52,76 +92,28 @@ namespace GNW2.Player
 
 
                 //Bullet Firing
-                if (!HasInputAuthority || !fireDelayTime.ExpiredOrNotRunning(Runner)) return;
+                if (!HasStateAuthority || !fireDelayTime.ExpiredOrNotRunning(Runner)) return;
 
                 if (data.Direction.sqrMagnitude > 0)
                 {
-                    _bulletSpawnLocation = data.Direction * 2;
+                    _bulletSpawnLocation = data.Direction * 2f;
                 }
 
-                if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
-                {
-                    fireDelayTime = TickTimer.CreateFromSeconds(Runner, fireRate);
-                    Runner.Spawn(bulletPrefab, transform.position + _bulletSpawnLocation, 
-                        Quaternion.LookRotation(_bulletSpawnLocation), Object.InputAuthority, OnBulletSpawned);
-                    
-                }
-            }
-        }
+                if (!data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0)) return;
 
-        private void Update()
-        {
-            if (fireDelayTime.ExpiredOrNotRunning(Runner))
-            {
-                notifUI.text = "Ready to Fire!";
-            }
-            else
-            {
-                notifUI.text = "";
+                fireDelayTime = TickTimer.CreateFromSeconds(Runner, fireRate);
+                Runner.Spawn(bulletPrefab, transform.position + _bulletSpawnLocation,
+                    Quaternion.LookRotation(_bulletSpawnLocation), Object.InputAuthority,
+                    (runner, bullet) =>
+                    {
+                        bullet.GetComponent<BulletProjectile>()?.Init(Object);
+                    });
             }
         }
 
         private void OnBulletSpawned(NetworkRunner runner, NetworkObject bullet)
         {
-            bullet.GetComponent<BulletProjectile>()?.Init();
-        }
-
-
-
-
-
-        public override void Spawned()
-        {
-            Debug.Log($"Input Authority: {Object.HasInputAuthority}");
-
-            if (Object.HasStateAuthority)
-            {
-                if (playerCamera != null)
-                {
-                    playerCamera.enabled = true;
-
-                    Debug.Log("Player camera enabled for local player.");
-
-                    Camera defaultMainCamera = Camera.main;
-                    if (defaultMainCamera != null && defaultMainCamera != playerCamera)
-                    {
-                        defaultMainCamera.gameObject.SetActive(false);
-                        Debug.Log("Default Main Camera disabled.");
-                    }
-                }
-                else
-                {
-                    Debug.LogError("Player camera is not assigned in the Inspector.");
-                }
-            }
-            else
-            {
-                if (playerCamera != null)
-                {
-                    playerCamera.enabled = false;
-                    Debug.Log("Player camera disabled for remote player.");
-                }
-            }
+            bullet.GetComponent<BulletProjectile>()?.Init(Object);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace GNW2.UIManager
 {
     public class UIManager : MonoBehaviour
     {
-        public Button hostGameButton;
+        /*public Button hostGameButton;
         public Button joinGameButton;
         public GameObject UICanvas;
 
@@ -41,7 +41,7 @@ namespace GNW2.UIManager
             {
                 UICanvas.SetActive(false);
             }
-        }
+        }*/
 
     }
 }
