@@ -51,10 +51,17 @@ namespace GNW2.GameManager
                 _spawnedPlayers.Remove(player);
             }
             ChangePlatformColor();
+
+            if (_spawnedPlayers.Count == 0)
+            {
+                SetCursorState(false);
+            }
         }
 
         public void OnInput(NetworkRunner runner, NetworkInput input)
         {
+            if (_runner == null) return;
+
             var data = new NetworkInputData();
             if (UnityEngine.Input.GetKey(KeyCode.W))
             {
@@ -174,6 +181,7 @@ namespace GNW2.GameManager
 
             ChangePlatformColor();
 
+            SetCursorState(true);
         }
 
         private void ChangePlatformColor()
@@ -189,20 +197,18 @@ namespace GNW2.GameManager
             }
         }
 
-        /*private void OnGUI()
+        private void SetCursorState(bool lockCursor)
         {
-            if (_runner == null)
+            if (lockCursor)
             {
-                if (GUI.Button(new Rect(0, 0, 200, 40), "Host"))
-                {
-                    StartGame(GameMode.Host);
-                }
-                if (GUI.Button(new Rect(0, 40, 200, 40), "Client"))
-                {
-                    StartGame(GameMode.Client);
-                }
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
             }
-        }*/
-
+            else
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+        }
     }
 }

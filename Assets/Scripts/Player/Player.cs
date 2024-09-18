@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Fusion;
@@ -6,7 +5,6 @@ using GNW2.Input;
 using GNW2.Projectile;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Windows;
 
 namespace GNW2.Player
 {
@@ -14,84 +12,61 @@ namespace GNW2.Player
     {
         private NetworkCharacterController _cc;
 
-        //public Camera playerCamera;
-
         [SerializeField] private float speed = 5f;
         [SerializeField] private float jumpForce = 5f;
         [SerializeField] private float jumpCooldown = 1f;
         private float lastJumpTime;
 
+        [SerializeField] private float lookSensitivity = 2f;
+        [SerializeField] private float maxLookX = 60f;
+        [SerializeField] private float minLookX = -60f;
+
         [SerializeField] BulletProjectile bulletPrefab;
         [SerializeField] float fireRate = 0.1f;
         [Networked] private TickTimer fireDelayTime { get; set; }
 
-
         private Vector3 _bulletSpawnLocation = Vector3.forward * 2;
 
-        private TextMeshProUGUI notifUI;
-        [SerializeField] private GameObject playerUIPrefab;
+        private Camera playerCamera;
+        private float rotationX;
 
         private void Awake()
         {
             _cc = GetComponent<NetworkCharacterController>();
+            playerCamera = GetComponentInChildren<Camera>();
+        }
 
-            /*if (Object.HasInputAuthority)
+        public override void Spawned()
+        {
+            if (Object.HasStateAuthority)
             {
-                if (playerUIPrefab == null)
-                {
-                    Debug.LogError("Player UI Prefab is not assigned in the Inspector.");
-                    return;
-                }
+                Debug.LogWarning("Camera");
 
-                GameObject playerUI = Instantiate(playerUIPrefab);
-                notifUI = playerUI.GetComponentInChildren<TextMeshProUGUI>();
-
-                if (notifUI == null)
-                {
-                    Debug.LogError("TextMeshProUGUI component not found in the instantiated prefab.");
-                }
-
-            }*/
-
-            GameObject canvas = GameObject.Find("PlayerCanvas");
-            if (canvas != null)
-            {
-                notifUI = canvas.GetComponentInChildren<TextMeshProUGUI>();
-            }
-            else
-            {
-                Debug.LogError("PlayerCanvas not found. Make sure it is present in the scene.");
+                playerCamera.enabled = true;
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
             }
         }
 
         public override void FixedUpdateNetwork()
         {
-            if (Object.HasInputAuthority && notifUI != null)
-            {
-                if (fireDelayTime.ExpiredOrNotRunning(Runner))
-                {
-                    notifUI.text = "Ready to Fire!";
-                }
-                else
-                {
-                    notifUI.text = "";
-                }
-            }
-
             if (GetInput(out NetworkInputData data))
-            {   
+            {
+                // Handle movement
                 data.Direction.Normalize();
-                _cc.Move(speed *data.Direction * Runner.DeltaTime);
+                _cc.Move(speed * data.Direction * Runner.DeltaTime);
 
-                //Jumping
+                // Jumping
                 if (data.Jump && _cc.Grounded && Time.time >= lastJumpTime + jumpCooldown)
                 {
                     _cc.Jump(overrideImpulse: jumpForce);
                     lastJumpTime = Time.time;
                 }
 
+                // Handle mouse look
+                MouseLook(data);
 
-                //Bullet Firing
+                // Bullet Firing
                 if (!HasStateAuthority || !fireDelayTime.ExpiredOrNotRunning(Runner)) return;
 
                 if (data.Direction.sqrMagnitude > 0)
@@ -110,6 +85,20 @@ namespace GNW2.Player
                     });
             }
         }
+
+        private void MouseLook(NetworkInputData data)
+        {
+            if (!Object.HasStateAuthority) return;
+
+            // Rotate the camera around the X-axis (look up and down)
+            rotationX -= data.MouseY * lookSensitivity;
+            rotationX = Mathf.Clamp(rotationX, minLookX, maxLookX);
+            playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
+
+            // Rotate the player around the Y-axis (turn left and right)
+            transform.Rotate(Vector3.up * data.MouseX * lookSensitivity);
+        }
+
 
         private void OnBulletSpawned(NetworkRunner runner, NetworkObject bullet)
         {
