@@ -10,41 +10,54 @@ namespace GNW2.Player
 {
     public class Player : NetworkBehaviour
     {
+        public static Player Local { get; set; }
         private NetworkCharacterController _cc;
 
+        //Player Move Mechanics
         [SerializeField] private float speed = 5f;
         [SerializeField] private float jumpForce = 5f;
         [SerializeField] private float jumpCooldown = 1f;
         private float lastJumpTime;
 
+        /*Player Mouse Sensitivity
         [SerializeField] private float lookSensitivity = 2f;
         [SerializeField] private float maxLookX = 60f;
-        [SerializeField] private float minLookX = -60f;
+        [SerializeField] private float minLookX = -60f;*/
 
+        //Bullet
         [SerializeField] BulletProjectile bulletPrefab;
         [SerializeField] float fireRate = 0.1f;
         [Networked] private TickTimer fireDelayTime { get; set; }
 
         private Vector3 _bulletSpawnLocation = Vector3.forward * 2;
 
-        private Camera playerCamera;
-        private float rotationX;
+        //Player Components
+        public Camera playerCamera;
+        public GameObject playerUI;
+        //private float rotationX;
 
         private void Awake()
         {
             _cc = GetComponent<NetworkCharacterController>();
-            playerCamera = GetComponentInChildren<Camera>();
         }
 
         public override void Spawned()
         {
-            if (Object.HasStateAuthority)
-            {
-                Debug.LogWarning("Camera");
+            Debug.Log($"Runner: {Runner}, HasInputAuthority: {HasInputAuthority}, Owner: {Object.InputAuthority}");
 
-                playerCamera.enabled = true;
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+            if (HasInputAuthority)
+            {
+                Debug.LogWarning("HasInputAuthority is true");
+                playerUI.gameObject.SetActive(true);
+                Local = this;
+                Camera.main.gameObject.SetActive(false);
+            }
+            else
+            {
+                Debug.LogWarning("HasInputAuthority is false");
+                Camera localCamera = GetComponentInChildren<Camera>();
+                localCamera.enabled = false;
+                playerUI.gameObject.SetActive(false);
             }
         }
 
@@ -64,7 +77,7 @@ namespace GNW2.Player
                 }
 
                 // Handle mouse look
-                MouseLook(data);
+                //MouseLook(data);
 
                 // Bullet Firing
                 if (!HasStateAuthority || !fireDelayTime.ExpiredOrNotRunning(Runner)) return;
@@ -86,7 +99,7 @@ namespace GNW2.Player
             }
         }
 
-        private void MouseLook(NetworkInputData data)
+        /*private void MouseLook(NetworkInputData data)
         {
             if (!Object.HasStateAuthority) return;
 
@@ -97,7 +110,7 @@ namespace GNW2.Player
 
             // Rotate the player around the Y-axis (turn left and right)
             transform.Rotate(Vector3.up * data.MouseX * lookSensitivity);
-        }
+        }*/
 
 
         private void OnBulletSpawned(NetworkRunner runner, NetworkObject bullet)

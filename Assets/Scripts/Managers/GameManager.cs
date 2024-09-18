@@ -13,7 +13,10 @@ namespace GNW2.GameManager
 {
     public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
     {
-        private NetworkRunner _runner;
+        [NonSerialized] public NetworkRunner networkRunnerPrefab;
+        private static GameManager _instance;
+        [NonSerialized] public NetworkRunner _runner;
+        public static NetworkRunner Runner => _instance._runner;
 
         [SerializeField] private NetworkPrefabRef _playerPrefab;
         [SerializeField] private GameObject _platform;
@@ -36,9 +39,10 @@ namespace GNW2.GameManager
             if (runner.IsServer)
             {
                 Vector3 customLocation = new Vector3(1 * runner.SessionInfo.PlayerCount, 0, 0);
-                NetworkObject playerNetworkObject = runner.Spawn(_playerPrefab, customLocation, Quaternion.identity);
+                NetworkObject playerNetworkObject = runner.Spawn(_playerPrefab, customLocation, Quaternion.identity, player);
                 playerNetworkObject.AssignInputAuthority(player);
                 _spawnedPlayers.Add(player, playerNetworkObject);
+
                 ChangePlatformColor();
             }
         }
@@ -52,10 +56,6 @@ namespace GNW2.GameManager
             }
             ChangePlatformColor();
 
-            if (_spawnedPlayers.Count == 0)
-            {
-                SetCursorState(false);
-            }
         }
 
         public void OnInput(NetworkRunner runner, NetworkInput input)
@@ -181,7 +181,7 @@ namespace GNW2.GameManager
 
             ChangePlatformColor();
 
-            SetCursorState(true);
+            //SetCursorState(true);
         }
 
         private void ChangePlatformColor()
@@ -197,7 +197,7 @@ namespace GNW2.GameManager
             }
         }
 
-        private void SetCursorState(bool lockCursor)
+        /*private void SetCursorState(bool lockCursor)
         {
             if (lockCursor)
             {
@@ -209,6 +209,6 @@ namespace GNW2.GameManager
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
-        }
+        }*/
     }
 }
