@@ -19,11 +19,6 @@ namespace GNW2.Player
         [SerializeField] private float jumpCooldown = 1f;
         private float lastJumpTime;
 
-        /*Player Mouse Sensitivity
-        [SerializeField] private float lookSensitivity = 2f;
-        [SerializeField] private float maxLookX = 60f;
-        [SerializeField] private float minLookX = -60f;*/
-
         //Bullet
         [SerializeField] BulletProjectile bulletPrefab;
         [SerializeField] float fireRate = 0.1f;
@@ -32,9 +27,22 @@ namespace GNW2.Player
         private Vector3 _bulletSpawnLocation = Vector3.forward * 2;
 
         //Player Components
-        public Camera playerCamera;
-        public GameObject playerUI;
-        //private float rotationX;
+        //[SerializeField] private Camera playerCamera;
+        [SerializeField] GameObject playerUI;
+        [SerializeField] Countdown countdown;
+        private float rotationX;
+
+        void Update()
+        {
+            if (fireDelayTime.ExpiredOrNotRunning(Runner))
+            {
+                countdown.readyToFire = true;
+            }
+            else
+            {
+                countdown.readyToFire = false;
+            }
+        }
 
         private void Awake()
         {
@@ -76,9 +84,6 @@ namespace GNW2.Player
                     lastJumpTime = Time.time;
                 }
 
-                // Handle mouse look
-                //MouseLook(data);
-
                 // Bullet Firing
                 if (!HasStateAuthority || !fireDelayTime.ExpiredOrNotRunning(Runner)) return;
 
@@ -98,19 +103,6 @@ namespace GNW2.Player
                     });
             }
         }
-
-        /*private void MouseLook(NetworkInputData data)
-        {
-            if (!Object.HasStateAuthority) return;
-
-            // Rotate the camera around the X-axis (look up and down)
-            rotationX -= data.MouseY * lookSensitivity;
-            rotationX = Mathf.Clamp(rotationX, minLookX, maxLookX);
-            playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
-
-            // Rotate the player around the Y-axis (turn left and right)
-            transform.Rotate(Vector3.up * data.MouseX * lookSensitivity);
-        }*/
 
 
         private void OnBulletSpawned(NetworkRunner runner, NetworkObject bullet)

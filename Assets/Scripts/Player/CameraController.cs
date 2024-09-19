@@ -6,29 +6,35 @@ using UnityEngine;
 public class CameraController : NetworkBehaviour
 {
     [SerializeField] private float mouseSensitivity = 100f;
-    private Transform playerBody;
+
+    // Rotation limits
+    [SerializeField] private float minXRotation = -90f;
+    [SerializeField] private float maxXRotation = 90f;
+    [SerializeField] private float minYRotation = -60f;
+    [SerializeField] private float maxYRotation = 60f;
+
     private float xRotation = 0f;
+    private float yRotation = 0f;
 
     private void Start()
     {
-        playerBody = transform.parent;
-
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    public void Update()
+    private void Update()
     {
-        if (!Object.HasStateAuthority) return;
+        //if (!Object.HasStateAuthority) return;
 
-        float mouseX = UnityEngine.Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = UnityEngine.Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
         xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+        xRotation = Mathf.Clamp(xRotation, minXRotation, maxXRotation);
 
-        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        yRotation += mouseX;
+        yRotation = Mathf.Clamp(yRotation, minYRotation, maxYRotation);
 
-        playerBody.Rotate(Vector3.up * mouseX);
+        transform.localRotation = Quaternion.Euler(xRotation, yRotation, 0f);
     }
 }
