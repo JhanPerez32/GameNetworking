@@ -8,6 +8,7 @@ using GNW2.Input;
 using UnityEngine.SceneManagement;
 using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.UI;
+using TMPro;
 
 namespace GNW2.GameManager
 {
@@ -25,9 +26,10 @@ namespace GNW2.GameManager
 
         private bool _isMouseButton0Pressed;
 
-        public Button hostGameButton;
-        public Button joinGameButton;
-        public GameObject UICanvas;
+        [SerializeField] Button hostGameButton;
+        [SerializeField] Button joinGameButton;
+        [SerializeField] TMP_InputField input;
+        [SerializeField] GameObject UICanvas;
 
         #region NetworkRunner Callbacks
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
@@ -63,28 +65,39 @@ namespace GNW2.GameManager
             if (_runner == null) return;
 
             var data = new NetworkInputData();
+
+            Vector3 moveDirection = Vector3.zero;
             if (UnityEngine.Input.GetKey(KeyCode.W))
             {
-                data.Direction += Vector3.forward;
+                moveDirection += transform.forward;
             }
             if (UnityEngine.Input.GetKey(KeyCode.A))
             {
-                data.Direction += Vector3.left;
+                moveDirection += -transform.right;
             }
             if (UnityEngine.Input.GetKey(KeyCode.S))
             {
-                data.Direction += Vector3.back;
+                moveDirection += -transform.forward;
             }
             if (UnityEngine.Input.GetKey(KeyCode.D))
             {
-                data.Direction += Vector3.right;
+                moveDirection += transform.right;
             }
+
+            data.Direction = moveDirection.normalized;
+
             if (UnityEngine.Input.GetKeyDown(KeyCode.Space))
             {
                 data.Jump = true;
             }
+
+            // Mouse Input
+            data.MouseX = UnityEngine.Input.GetAxis("Mouse X");
+            data.MouseY = UnityEngine.Input.GetAxis("Mouse Y");
+
             data.buttons.Set(button: NetworkInputData.MOUSEBUTTON0, _isMouseButton0Pressed);
 
+            // Send input data
             input.Set(data);
 
         }
@@ -117,29 +130,19 @@ namespace GNW2.GameManager
         public void OnSceneLoadStart(NetworkRunner runner){ }
         #endregion
 
-        private void Start()
+        private void Awake()
         {
-            if (_runner == null)
+            hostGameButton.onClick.AddListener(() =>
             {
-                if (hostGameButton != null)
-                {
-                    hostGameButton.onClick.AddListener(() =>
-                    {
-                        StartGame(GameMode.Host);
-                        HideUI();
-                    });
-                }
+                StartGame(GameMode.Host);
+                HideUI();
+            });
 
-                if (joinGameButton != null)
-                {
-                    joinGameButton.onClick.AddListener(() =>
-                    {
-                        StartGame(GameMode.Client);
-                        HideUI();
-                    });
-                }
-            }
-                
+            joinGameButton.onClick.AddListener(() =>
+            {
+                StartGame(GameMode.Client);
+                HideUI();
+            });                
         }
 
         void HideUI()
@@ -180,8 +183,6 @@ namespace GNW2.GameManager
             );
 
             ChangePlatformColor();
-
-            //SetCursorState(true);
         }
 
         private void ChangePlatformColor()
@@ -196,19 +197,5 @@ namespace GNW2.GameManager
                 }
             }
         }
-
-        /*private void SetCursorState(bool lockCursor)
-        {
-            if (lockCursor)
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
-            else
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
-        }*/
     }
 }

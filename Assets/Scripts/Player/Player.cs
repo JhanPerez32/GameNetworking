@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Fusion;
@@ -8,13 +9,18 @@ using UnityEngine;
 
 namespace GNW2.Player
 {
-    public class Player : NetworkBehaviour
+    public class Player : NetworkBehaviour, ICombat
     {
         public static Player Local { get; set; }
         private NetworkCharacterController _cc;
 
+        //Player Camera
+        [SerializeField] private float movementSpeed = 5f;
+        [SerializeField] private float lookSpeed = 2f;
+        [SerializeField] private Camera playerCamera;
+        private Vector2 lookRotation;
+
         //Player Move Mechanics
-        [SerializeField] private float speed = 5f;
         [SerializeField] private float jumpForce = 5f;
         [SerializeField] private float jumpCooldown = 1f;
         private float lastJumpTime;
@@ -27,10 +33,9 @@ namespace GNW2.Player
         private Vector3 _bulletSpawnLocation = Vector3.forward * 2;
 
         //Player Components
-        //[SerializeField] private Camera playerCamera;
         [SerializeField] GameObject playerUI;
         [SerializeField] Countdown countdown;
-        private float rotationX;
+        public event Action<int> OnTakeDamage;
 
         void Update()
         {
@@ -59,12 +64,13 @@ namespace GNW2.Player
                 playerUI.gameObject.SetActive(true);
                 Local = this;
                 Camera.main.gameObject.SetActive(false);
+                playerCamera.enabled = true;
+                Cursor.lockState = CursorLockMode.Locked;
             }
             else
             {
                 Debug.LogWarning("HasInputAuthority is false");
-                Camera localCamera = GetComponentInChildren<Camera>();
-                localCamera.enabled = false;
+                playerCamera.enabled = false;
                 playerUI.gameObject.SetActive(false);
             }
         }
@@ -73,9 +79,8 @@ namespace GNW2.Player
         {
             if (GetInput(out NetworkInputData data))
             {
-                // Handle movement
-                data.Direction.Normalize();
-                _cc.Move(speed * data.Direction * Runner.DeltaTime);
+                // Movement
+                MovePlayer(data.Direction);
 
                 // Jumping
                 if (data.Jump && _cc.Grounded && Time.time >= lastJumpTime + jumpCooldown)
@@ -83,6 +88,9 @@ namespace GNW2.Player
                     _cc.Jump(overrideImpulse: jumpForce);
                     lastJumpTime = Time.time;
                 }
+
+                // Mouse Look
+                LookAround(data.MouseX, data.MouseY);
 
                 // Bullet Firing
                 if (!HasStateAuthority || !fireDelayTime.ExpiredOrNotRunning(Runner)) return;
@@ -99,15 +107,51 @@ namespace GNW2.Player
                     Quaternion.LookRotation(_bulletSpawnLocation), Object.InputAuthority,
                     (runner, bullet) =>
                     {
-                        bullet.GetComponent<BulletProjectile>()?.Init(Object);
+                        bullet.GetComponent<BulletProjectile>()?.Init();
                     });
             }
         }
 
-
         private void OnBulletSpawned(NetworkRunner runner, NetworkObject bullet)
         {
-            bullet.GetComponent<BulletProjectile>()?.Init(Object);
+            bullet.GetComponent<BulletProjectile>()?.Init();
+        }
+
+        private void MovePlayer(Vector3 inputDirection)
+        {
+            if (HasStateAuthority)
+            {
+                Vector3 cameraForward = playerCamera.transform.forward;
+                Vector3 cameraRight = playerCamera.transform.right;
+
+                cameraForward.y = 0f;
+                cameraRight.y = 0f;
+
+                cameraForward.Normalize();
+                cameraRight.Normalize();
+
+                Vector3 moveDirection = (cameraForward * inputDirection.z) + (cameraRight * inputDirection.x);
+
+                _cc.Move(moveDirection * movementSpeed * Runner.DeltaTime);
+            }
+        }
+
+        private void LookAround(float mouseX, float mouseY)
+        {
+            if (HasStateAuthority)
+            {
+                lookRotation.x += mouseX * lookSpeed;
+                lookRotation.y += mouseY * lookSpeed;
+                lookRotation.y = Mathf.Clamp(lookRotation.y, -90f, 90f);
+
+                transform.localRotation = Quaternion.Euler(0, lookRotation.x, 0);
+                playerCamera.transform.localRotation = Quaternion.Euler(-lookRotation.y, 0, 0);
+            }
+        }
+
+        public void TakeDamage(int Damage)
+        {
+            OnTakeDamage?.Invoke(Damage);
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Fusion;
+using GNW2.Player;
 using UnityEngine;
 
 namespace GNW2.Projectile
@@ -10,6 +11,7 @@ namespace GNW2.Projectile
     {
         [SerializeField] float bulletSpeed = 10f;
         [SerializeField] float lifeTime = 5f;
+        [SerializeField] int bulletDamage = 1;
 
         [Range (0.1f, 0.5f)]
         [SerializeField] float dyingTime = 0.2f;
@@ -20,19 +22,14 @@ namespace GNW2.Projectile
         [SerializeField] Material dyingMaterial;
         [SerializeField] Renderer bulletRenderer;
 
-        private NetworkObject owner;
-        private Transform target;
-
         private void Start()
         {
             bulletRenderer.material = normalMaterial;
         }
 
-        public void Init(NetworkObject bulletOwner)
+        public void Init()
         {
             life = TickTimer.CreateFromSeconds(Runner, lifeTime);
-            owner = bulletOwner;
-            FindNearestTarget();
         }
 
         public override void FixedUpdateNetwork()
@@ -58,28 +55,22 @@ namespace GNW2.Projectile
             }
         }
 
-        private void FindNearestTarget()
+        private void OnCollisionEnter(Collision bulletHit)
         {
-            NetworkObject[] networkObjects = FindObjectsOfType<NetworkObject>();
-            List<NetworkObject> potentialTargets = new List<NetworkObject>();
-
-            foreach (NetworkObject obj in networkObjects)
+            Debug.Log($"Hit Collider {bulletHit.collider.name}");
+            if (Object.HasStateAuthority)
             {
-                if (obj != owner && obj.HasStateAuthority)
+                var combatInterface = bulletHit.collider.GetComponent<ICombat>();
+                if(combatInterface != null)
                 {
-                    potentialTargets.Add(obj);
+                    combatInterface.TakeDamage(bulletDamage);
                 }
-            }
+                else
+                {
+                    Debug.LogError("Combat Interface not Found");
+                }
 
-            float minDistance = Mathf.Infinity;
-            foreach (NetworkObject potentialTarget in potentialTargets)
-            {
-                float distance = Vector3.Distance(transform.position, potentialTarget.transform.position);
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    target = potentialTarget.transform;
-                }
+                Runner.Despawn(Object);
             }
         }
     }

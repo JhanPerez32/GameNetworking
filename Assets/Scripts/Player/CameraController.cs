@@ -22,19 +22,21 @@ public class CameraController : NetworkBehaviour
         Cursor.visible = false;
     }
 
-    private void Update()
+    public override void FixedUpdateNetwork()
     {
-        //if (!Object.HasStateAuthority) return;
+        if (HasInputAuthority)
+        {
+            float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+            float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+            xRotation -= mouseY;
+            xRotation = Mathf.Clamp(xRotation, minXRotation, maxXRotation);
 
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, minXRotation, maxXRotation);
+            yRotation += mouseX;
+            yRotation = Mathf.Clamp(yRotation, minYRotation, maxYRotation);
 
-        yRotation += mouseX;
-        yRotation = Mathf.Clamp(yRotation, minYRotation, maxYRotation);
-
-        transform.localRotation = Quaternion.Euler(xRotation, yRotation, 0f);
+            transform.localRotation = Quaternion.Euler(xRotation, yRotation, 0f);
+        }
+        
     }
 }
