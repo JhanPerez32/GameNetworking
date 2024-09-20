@@ -28,9 +28,8 @@ namespace GNW2.Player
         //Bullet
         [SerializeField] BulletProjectile bulletPrefab;
         [SerializeField] float fireRate = 0.1f;
+        [SerializeField] Transform bulletSpawnLocation;
         [Networked] private TickTimer fireDelayTime { get; set; }
-
-        private Vector3 _bulletSpawnLocation = Vector3.forward * 2;
 
         //Player Components
         [SerializeField] GameObject playerUI;
@@ -95,20 +94,19 @@ namespace GNW2.Player
                 // Bullet Firing
                 if (!HasStateAuthority || !fireDelayTime.ExpiredOrNotRunning(Runner)) return;
 
-                if (data.Direction.sqrMagnitude > 0)
+                if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
                 {
-                    _bulletSpawnLocation = data.Direction * 2f;
+                    // Use the bulletSpawnLocation transform for spawning the bullet
+                    Vector3 spawnPosition = bulletSpawnLocation.position;
+                    Vector3 spawnDirection = bulletSpawnLocation.forward; // Assuming the bullet should fire forward from this point
+
+                    fireDelayTime = TickTimer.CreateFromSeconds(Runner, fireRate);
+                    Runner.Spawn(bulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection), Object.InputAuthority,
+                        (runner, bullet) =>
+                        {
+                            bullet.GetComponent<BulletProjectile>()?.Init();
+                        });
                 }
-
-                if (!data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0)) return;
-
-                fireDelayTime = TickTimer.CreateFromSeconds(Runner, fireRate);
-                Runner.Spawn(bulletPrefab, transform.position + _bulletSpawnLocation,
-                    Quaternion.LookRotation(_bulletSpawnLocation), Object.InputAuthority,
-                    (runner, bullet) =>
-                    {
-                        bullet.GetComponent<BulletProjectile>()?.Init();
-                    });
             }
         }
 
@@ -141,11 +139,12 @@ namespace GNW2.Player
             if (HasStateAuthority)
             {
                 lookRotation.x += mouseX * lookSpeed;
-                lookRotation.y += mouseY * lookSpeed;
+                //lookRotation.y += mouseY * lookSpeed;
+
                 lookRotation.y = Mathf.Clamp(lookRotation.y, -90f, 90f);
 
                 transform.localRotation = Quaternion.Euler(0, lookRotation.x, 0);
-                playerCamera.transform.localRotation = Quaternion.Euler(-lookRotation.y, 0, 0);
+                playerCamera.transform.localRotation = Quaternion.Euler(/*-lookRotation.y*/ 0, 0, 0);
             }
         }
 

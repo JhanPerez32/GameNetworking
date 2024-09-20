@@ -278,6 +278,7 @@ MonoBehaviour:
   jumpCooldown: 1.5
   bulletPrefab: {fileID: 2565123636818304344, guid: 532140a021217fe418177b0ea44d427b, type: 3}
   fireRate: 2
+  bulletSpawnLocation: {fileID: 5890624548354885483}
   playerUI: {fileID: 7332312440297496254}
   countdown: {fileID: 4796484730699320920}
 --- !u!114 &1401584406488063681
@@ -292,7 +293,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 912bf480813be9b4a831a108d8494896, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerHitFX: {fileID: 0}
+  playerHitFX: {fileID: 4033287822461114141, guid: 46ccd3699fb249345a9a13767fd6829c, type: 3}
 --- !u!1 &975943218341985866
 GameObject:
   m_ObjectHideFlags: 0
@@ -1075,9 +1076,9 @@ GameObject:
   m_Component:
   - component: {fileID: 5890624548354885483}
   m_Layer: 0
-  m_Name: Spawn Bullet
+  m_Name: Spawn Bullet Point
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 1206586993520771344, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1

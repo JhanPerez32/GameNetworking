@@ -1,13 +1,11 @@
 using Fusion;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace GNW2.Player
 {
     public class PlayerHealth : NetworkBehaviour
     {
-        private int maxHealth = 60;
+        private int maxHealth = 5;
 
         [Networked] private int currentHealth {  get; set; }
         [SerializeField] ParticleSystem playerHitFX;
@@ -30,6 +28,16 @@ namespace GNW2.Player
         {
             currentHealth -= damage;
             Debug.Log($"Current Health: {currentHealth}");
+            RPC_HitFx(transform.position);
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_HitFx(Vector3 position)
+        {
+            if(playerHitFX != null)
+            {
+                Instantiate(playerHitFX, position, Quaternion.identity);
+            }
         }
     }
 }

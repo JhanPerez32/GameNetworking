@@ -93,7 +93,7 @@ namespace GNW2.GameManager
 
             // Mouse Input
             data.MouseX = UnityEngine.Input.GetAxis("Mouse X");
-            data.MouseY = UnityEngine.Input.GetAxis("Mouse Y");
+            //data.MouseY = UnityEngine.Input.GetAxis("Mouse Y");
 
             data.buttons.Set(button: NetworkInputData.MOUSEBUTTON0, _isMouseButton0Pressed);
 
