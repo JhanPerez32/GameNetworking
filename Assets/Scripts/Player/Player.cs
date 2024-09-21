@@ -96,9 +96,9 @@ namespace GNW2.Player
 
                 if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
                 {
-                    // Use the bulletSpawnLocation transform for spawning the bullet
+                    //Bullet Spawn Location
                     Vector3 spawnPosition = bulletSpawnLocation.position;
-                    Vector3 spawnDirection = bulletSpawnLocation.forward; // Assuming the bullet should fire forward from this point
+                    Vector3 spawnDirection = bulletSpawnLocation.forward;
 
                     fireDelayTime = TickTimer.CreateFromSeconds(Runner, fireRate);
                     Runner.Spawn(bulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection), Object.InputAuthority,
