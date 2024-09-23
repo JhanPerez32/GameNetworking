@@ -36,8 +36,16 @@ namespace GNW2.Player
         [SerializeField] Countdown countdown;
         public event Action<int> OnTakeDamage;
 
+        // Cursor control
+        private bool isCursorVisible = false;
+
         void Update()
         {
+            if (HasInputAuthority && UnityEngine.Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                ToggleCursor();
+            }
+
             if (fireDelayTime.ExpiredOrNotRunning(Runner))
             {
                 countdown.readyToFire = true;
@@ -45,6 +53,22 @@ namespace GNW2.Player
             else
             {
                 countdown.readyToFire = false;
+            }
+        }
+
+        private void ToggleCursor()
+        {
+            isCursorVisible = !isCursorVisible;
+
+            if (isCursorVisible)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
             }
         }
 
@@ -78,34 +102,43 @@ namespace GNW2.Player
         {
             if (GetInput(out NetworkInputData data))
             {
-                // Movement
-                MovePlayer(data.Direction);
-
-                // Jumping
-                if (data.Jump && _cc.Grounded && Time.time >= lastJumpTime + jumpCooldown)
+                if (!isCursorVisible)
                 {
-                    _cc.Jump(overrideImpulse: jumpForce);
-                    lastJumpTime = Time.time;
-                }
+                    // Movement
+                    MovePlayer(data.Direction);
 
-                // Mouse Look
-                LookAround(data.MouseX, data.MouseY);
+                    // Jumping
+                    if (data.Jump && _cc.Grounded && Time.time >= lastJumpTime + jumpCooldown)
+                    {
+                        _cc.Jump(overrideImpulse: jumpForce);
+                        lastJumpTime = Time.time;
+                    }
 
-                // Bullet Firing
-                if (!HasStateAuthority || !fireDelayTime.ExpiredOrNotRunning(Runner)) return;
+                    // Mouse Look
+                    LookAround(data.MouseX, data.MouseY);
 
-                if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
-                {
-                    //Bullet Spawn Location
-                    Vector3 spawnPosition = bulletSpawnLocation.position;
-                    Vector3 spawnDirection = bulletSpawnLocation.forward;
+                    if (!HasStateAuthority || !fireDelayTime.ExpiredOrNotRunning(Runner)) return;
 
-                    fireDelayTime = TickTimer.CreateFromSeconds(Runner, fireRate);
-                    Runner.Spawn(bulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection), Object.InputAuthority,
-                        (runner, bullet) =>
-                        {
-                            bullet.GetComponent<BulletProjectile>()?.Init();
-                        });
+                    // Jumping
+                    if (data.Jump && _cc.Grounded && Time.time >= lastJumpTime + jumpCooldown)
+                    {
+                        _cc.Jump(overrideImpulse: jumpForce);
+                        lastJumpTime = Time.time;
+                    }
+
+                    if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
+                    {
+                        //Bullet Spawn Location
+                        Vector3 spawnPosition = bulletSpawnLocation.position;
+                        Vector3 spawnDirection = bulletSpawnLocation.forward;
+
+                        fireDelayTime = TickTimer.CreateFromSeconds(Runner, fireRate);
+                        Runner.Spawn(bulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection), Object.InputAuthority,
+                            (runner, bullet) =>
+                            {
+                                bullet.GetComponent<BulletProjectile>()?.Init();
+                            });
+                    }
                 }
             }
         }
@@ -152,5 +185,7 @@ namespace GNW2.Player
         {
             OnTakeDamage?.Invoke(Damage);
         }
+
+
     }
 }
