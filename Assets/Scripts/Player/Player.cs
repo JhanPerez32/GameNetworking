@@ -42,15 +42,18 @@ namespace GNW2.Player
         //Animation
         //[SerializeField] private Animator playerAnimator;
 
-        private NetworkBool isFinished;
-        [SerializeField] TextMeshProUGUI winlosstext;
+        // Win/Loss UI Elements
+        [SerializeField] private GameObject winUI;
+        [SerializeField] private GameObject loseUI;
+        private bool isFinished = false;
 
         private void Awake()
         {
             _cc = GetComponent<NetworkCharacterController>();
             //playerAnimator = GetComponentInChildren<Animator>();
 
-            winlosstext.text = " ";
+            winUI.SetActive(false);
+            loseUI.SetActive(false);
         }
 
         void Update()
@@ -68,13 +71,6 @@ namespace GNW2.Player
             {
                 countdown.readyToFire = false;
             }
-
-            if (!isFinished)
-            {
-                winlosstext.text = "You Win";
-            }
-
-
         }
 
         private void ToggleCursor()
@@ -202,7 +198,7 @@ namespace GNW2.Player
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.CompareTag("FinishLine"))
+            if (other.gameObject.CompareTag("FinishLine") && !isFinished)
             {
                 if (Object.HasStateAuthority)
                 {
@@ -211,12 +207,32 @@ namespace GNW2.Player
             }
         }
 
-        [Rpc(RpcSources.StateAuthority, RpcTargets.Proxies)]
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         private void RPC_FinishLine()
         {
+            if (HasInputAuthority)
+            {
+                ShowWinUI();
+            }
+            else
+            {
+                ShowLossUI();
+            }
             isFinished = true;
         }
 
+        private void ShowWinUI()
+        {
+            Debug.LogWarning("You Win");
+            winUI.SetActive(true);
+            loseUI.SetActive(false);
+        }
 
+        private void ShowLossUI()
+        {
+            Debug.LogWarning("You Loss");
+            winUI.SetActive(false);
+            loseUI.SetActive(true);
+        }
     }
 }

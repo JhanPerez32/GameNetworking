@@ -31,6 +31,7 @@ namespace GNW2.GameManager
         [SerializeField] TMP_InputField input;
         [SerializeField] GameObject UICanvas;
 
+
         #region NetworkRunner Callbacks
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
 
@@ -142,7 +143,7 @@ namespace GNW2.GameManager
             {
                 StartGame(GameMode.Client);
                 HideUI();
-            });                
+            });
         }
 
         void HideUI()
