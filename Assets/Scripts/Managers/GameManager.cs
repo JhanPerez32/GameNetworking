@@ -40,7 +40,7 @@ namespace GNW2.GameManager
         {
             if (runner.IsServer)
             {
-                Vector3 customLocation = new Vector3(1 * runner.SessionInfo.PlayerCount, 0, 0);
+                Vector3 customLocation = new Vector3(1 * runner.SessionInfo.PlayerCount, 5, 0);
                 NetworkObject playerNetworkObject = runner.Spawn(_playerPrefab, customLocation, Quaternion.identity, player);
                 playerNetworkObject.AssignInputAuthority(player);
                 _spawnedPlayers.Add(player, playerNetworkObject);

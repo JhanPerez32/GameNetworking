@@ -39,6 +39,20 @@ namespace GNW2.Player
         // Cursor control
         private bool isCursorVisible = false;
 
+        //Animation
+        //[SerializeField] private Animator playerAnimator;
+
+        private NetworkBool isFinished;
+        [SerializeField] TextMeshProUGUI winlosstext;
+
+        private void Awake()
+        {
+            _cc = GetComponent<NetworkCharacterController>();
+            //playerAnimator = GetComponentInChildren<Animator>();
+
+            winlosstext.text = " ";
+        }
+
         void Update()
         {
             if (HasInputAuthority && UnityEngine.Input.GetKeyDown(KeyCode.Alpha1))
@@ -54,6 +68,13 @@ namespace GNW2.Player
             {
                 countdown.readyToFire = false;
             }
+
+            if (!isFinished)
+            {
+                winlosstext.text = "You Win";
+            }
+
+
         }
 
         private void ToggleCursor()
@@ -70,11 +91,6 @@ namespace GNW2.Player
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
-        }
-
-        private void Awake()
-        {
-            _cc = GetComponent<NetworkCharacterController>();
         }
 
         public override void Spawned()
@@ -107,24 +123,13 @@ namespace GNW2.Player
                     // Movement
                     MovePlayer(data.Direction);
 
-                    // Jumping
-                    if (data.Jump && _cc.Grounded && Time.time >= lastJumpTime + jumpCooldown)
-                    {
-                        _cc.Jump(overrideImpulse: jumpForce);
-                        lastJumpTime = Time.time;
-                    }
-
                     // Mouse Look
                     LookAround(data.MouseX, data.MouseY);
 
                     if (!HasStateAuthority || !fireDelayTime.ExpiredOrNotRunning(Runner)) return;
 
                     // Jumping
-                    if (data.Jump && _cc.Grounded && Time.time >= lastJumpTime + jumpCooldown)
-                    {
-                        _cc.Jump(overrideImpulse: jumpForce);
-                        lastJumpTime = Time.time;
-                    }
+                    Jumping(data);
 
                     if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
                     {
@@ -140,6 +145,15 @@ namespace GNW2.Player
                             });
                     }
                 }
+            }
+        }
+
+        private void Jumping(NetworkInputData data)
+        {
+            if (data.Jump && _cc.Grounded && Time.time >= lastJumpTime + jumpCooldown)
+            {
+                _cc.Jump(overrideImpulse: jumpForce);
+                lastJumpTime = Time.time;
             }
         }
 
@@ -184,6 +198,23 @@ namespace GNW2.Player
         public void TakeDamage(int Damage)
         {
             OnTakeDamage?.Invoke(Damage);
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (other.gameObject.CompareTag("FinishLine"))
+            {
+                if (Object.HasStateAuthority)
+                {
+                    RPC_FinishLine();
+                }
+            }
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.Proxies)]
+        private void RPC_FinishLine()
+        {
+            isFinished = true;
         }
 
 
