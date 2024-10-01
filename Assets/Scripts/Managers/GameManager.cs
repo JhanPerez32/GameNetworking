@@ -87,16 +87,12 @@ namespace GNW2.GameManager
 
             data.Direction = moveDirection.normalized;
 
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Space))
-            {
-                data.Jump = true;
-            }
-
             // Mouse Input
             data.MouseX = UnityEngine.Input.GetAxis("Mouse X");
             //data.MouseY = UnityEngine.Input.GetAxis("Mouse Y");
 
             data.buttons.Set(button: NetworkInputData.MOUSEBUTTON0, _isMouseButton0Pressed);
+            data.buttons.Set(NetworkInputData.ISJUMP, UnityEngine.Input.GetKeyDown(KeyCode.Space));
 
             // Send input data
             input.Set(data);

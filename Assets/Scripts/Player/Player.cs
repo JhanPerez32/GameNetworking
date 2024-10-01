@@ -20,7 +20,7 @@ namespace GNW2.Player
         [SerializeField] private Camera playerCamera;
         private Vector2 lookRotation;
 
-        //Player Move Mechanics
+        //Player Jump Mechanics
         [SerializeField] private float jumpForce = 5f;
         [SerializeField] private float jumpCooldown = 1f;
         private float lastJumpTime;
@@ -45,7 +45,7 @@ namespace GNW2.Player
         // Win/Loss UI Elements
         [SerializeField] private GameObject winUI;
         [SerializeField] private GameObject loseUI;
-        private bool isFinished = false;
+        [SerializeField] private bool isFinished = false;
 
         private void Awake()
         {
@@ -91,11 +91,8 @@ namespace GNW2.Player
 
         public override void Spawned()
         {
-            Debug.Log($"Runner: {Runner}, HasInputAuthority: {HasInputAuthority}, Owner: {Object.InputAuthority}");
-
             if (HasInputAuthority)
             {
-                Debug.LogWarning("HasInputAuthority is true");
                 playerUI.gameObject.SetActive(true);
                 Local = this;
                 Camera.main.gameObject.SetActive(false);
@@ -104,7 +101,6 @@ namespace GNW2.Player
             }
             else
             {
-                Debug.LogWarning("HasInputAuthority is false");
                 playerCamera.enabled = false;
                 playerUI.gameObject.SetActive(false);
             }
@@ -126,30 +122,36 @@ namespace GNW2.Player
 
                     // Jumping
                     Jumping(data);
-
-                    if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
-                    {
-                        //Bullet Spawn Location
-                        Vector3 spawnPosition = bulletSpawnLocation.position;
-                        Vector3 spawnDirection = bulletSpawnLocation.forward;
-
-                        fireDelayTime = TickTimer.CreateFromSeconds(Runner, fireRate);
-                        Runner.Spawn(bulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection), Object.InputAuthority,
-                            (runner, bullet) =>
-                            {
-                                bullet.GetComponent<BulletProjectile>()?.Init();
-                            });
-                    }
+                    Firing(data);
                 }
             }
         }
 
+        #region Player Inputs
+
         private void Jumping(NetworkInputData data)
         {
-            if (data.Jump && _cc.Grounded && Time.time >= lastJumpTime + jumpCooldown)
+            if (data.buttons.IsSet(NetworkInputData.ISJUMP) && _cc.Grounded && Time.time >= lastJumpTime + jumpCooldown)
             {
-                _cc.Jump(overrideImpulse: jumpForce);
+                _cc.Jump(false, jumpForce);
                 lastJumpTime = Time.time;
+            }
+        }
+
+        private void Firing(NetworkInputData data)
+        {
+            if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
+            {
+                //Bullet Spawn Location
+                Vector3 spawnPosition = bulletSpawnLocation.position;
+                Vector3 spawnDirection = bulletSpawnLocation.forward;
+
+                fireDelayTime = TickTimer.CreateFromSeconds(Runner, fireRate);
+                Runner.Spawn(bulletPrefab, spawnPosition, Quaternion.LookRotation(spawnDirection), Object.InputAuthority,
+                    (runner, bullet) =>
+                    {
+                        bullet.GetComponent<BulletProjectile>()?.Init();
+                    });
             }
         }
 
@@ -191,6 +193,8 @@ namespace GNW2.Player
             }
         }
 
+        #endregion
+
         public void TakeDamage(int Damage)
         {
             OnTakeDamage?.Invoke(Damage);
@@ -202,20 +206,22 @@ namespace GNW2.Player
             {
                 if (Object.HasStateAuthority)
                 {
-                    RPC_FinishLine();
+                    RPC_FinishLine(Object.InputAuthority);
                 }
             }
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-        private void RPC_FinishLine()
+        private void RPC_FinishLine(PlayerRef finishingPlayer)
         {
-            if (HasInputAuthority)
+            if (Runner.LocalPlayer == finishingPlayer)
             {
+                Debug.LogWarning($"Player: {finishingPlayer.PlayerId} Won");
                 ShowWinUI();
             }
             else
             {
+                Debug.LogWarning($"Player: {Runner.LocalPlayer.PlayerId} Loss");
                 ShowLossUI();
             }
             isFinished = true;
@@ -223,16 +229,14 @@ namespace GNW2.Player
 
         private void ShowWinUI()
         {
-            Debug.LogWarning("You Win");
             winUI.SetActive(true);
             loseUI.SetActive(false);
         }
 
         private void ShowLossUI()
         {
-            Debug.LogWarning("You Loss");
-            winUI.SetActive(false);
             loseUI.SetActive(true);
+            winUI.SetActive(false);
         }
     }
 }
