@@ -16,42 +16,44 @@ public class RaycastAttack : NetworkBehaviour
     {
         if (!HasStateAuthority) return;
 
-        var ray = PlayerMovement.mainCamera.ScreenPointToRay(Input.mousePosition);
-        ray.origin += PlayerMovement.mainCamera.transform.forward;
-
-        delayTimeLeft -= Runner.DeltaTime;
-
-        if (!Input.GetMouseButton(0)) return;
-        if (delayTimeLeft > 0) return;
-
-        delayTimeLeft = fireDelay;
-
-        Debug.Log("Firing Raycast");
-
-        if (Physics.Raycast(ray.origin, ray.direction, out var hit))
+        if (CursorManager.Instance.IsCursorLocked())
         {
-            Debug.Log($"Firing and hit {hit.collider.gameObject.name}");
+            var ray = PlayerMovement.mainCamera.ScreenPointToRay(Input.mousePosition);
+            ray.origin += PlayerMovement.mainCamera.transform.forward;
 
-            CreateTracerEffect(hit.point);
+            delayTimeLeft -= Runner.DeltaTime;
+            if (!Input.GetMouseButton(0)) return;
+            if (delayTimeLeft > 0) return;
 
-            if (hit.collider.TryGetComponent<PlayerHealth>(out var health))
+            delayTimeLeft = fireDelay;
+            Debug.Log("Firing Raycast");
+
+            if (Physics.Raycast(ray.origin, ray.direction, out var hit))
             {
-                Debug.Log("Hit and dealing damage");
-                health.DealDamageRpc(Damage);
+                Debug.Log($"Firing and hit {hit.collider.gameObject.name}");
+
+                CreateTracerEffect(hit.point);
+
+                if (hit.collider.TryGetComponent<PlayerHealth>(out var health))
+                {
+                    Debug.Log("Hit and dealing damage");
+                    health.DealDamageRpc(Damage);
+                }
             }
         }
     }
 
     private void CreateTracerEffect(Vector3 hitPoint)
     {
-        GameObject tracer = Instantiate(tracerPrefab, firePoint.position, Quaternion.identity);
+        NetworkObject tracerNetworkObject = Runner.Spawn(tracerPrefab, firePoint.position, Quaternion.identity);
+        GameObject tracer = tracerNetworkObject.gameObject;
+
+        //tracer.GetComponent<Projectile>()?.Init();
 
         Vector3 direction = (hitPoint - firePoint.position).normalized;
         float distance = Vector3.Distance(firePoint.position, hitPoint);
 
         Rigidbody tracerRb = tracer.GetComponent<Rigidbody>();
         tracerRb.velocity = direction * distance * 10;
-
-        Destroy(tracer, 1f);
     }
 }

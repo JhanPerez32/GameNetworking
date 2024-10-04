@@ -243,6 +243,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2248447196035767994, guid: 17a644e65c3424075b64ae978ef8b2ad,
         type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2248447196035767994, guid: 17a644e65c3424075b64ae978ef8b2ad,
+        type: 3}
       propertyPath: m_TagString
       value: Ground
       objectReference: {fileID: 0}
@@ -1328,6 +1333,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2248447196035767994, guid: 17a644e65c3424075b64ae978ef8b2ad,
         type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2248447196035767994, guid: 17a644e65c3424075b64ae978ef8b2ad,
+        type: 3}
       propertyPath: m_TagString
       value: Ground
       objectReference: {fileID: 0}
@@ -2401,6 +2411,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall
       objectReference: {fileID: 0}
+    - target: {fileID: 4609284065106933479, guid: 0e3b1388d8a76489c88ca1e20f243842,
+        type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2563,6 +2578,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 4609284065106933479, guid: 0e3b1388d8a76489c88ca1e20f243842,
+        type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2719,7 +2739,7 @@ GameObject:
   - component: {fileID: 1377287863}
   - component: {fileID: 1377287862}
   - component: {fileID: 1377287861}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Ground
   m_TagString: Ground
   m_Icon: {fileID: 0}
@@ -2900,6 +2920,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: GM-Corner-URP (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2248447196035767994, guid: 17a644e65c3424075b64ae978ef8b2ad,
+        type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 2248447196035767994, guid: 17a644e65c3424075b64ae978ef8b2ad,
         type: 3}
@@ -3141,6 +3166,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2248447196035767994, guid: 17a644e65c3424075b64ae978ef8b2ad,
         type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2248447196035767994, guid: 17a644e65c3424075b64ae978ef8b2ad,
+        type: 3}
       propertyPath: m_TagString
       value: Ground
       objectReference: {fileID: 0}
@@ -3162,7 +3192,7 @@ GameObject:
   - component: {fileID: 1576016679}
   - component: {fileID: 1576016678}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: Player Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3334,6 +3364,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 4609284065106933479, guid: 0e3b1388d8a76489c88ca1e20f243842,
+        type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3472,6 +3507,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 4609284065106933479, guid: 0e3b1388d8a76489c88ca1e20f243842,
+        type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3545,7 +3585,7 @@ GameObject:
   - component: {fileID: 3080800662442814584}
   - component: {fileID: 947379526200055986}
   - component: {fileID: 3819198473124606526}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GM-Climb-URP (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3690,7 +3730,7 @@ GameObject:
   - component: {fileID: 503061623900616359}
   - component: {fileID: 2386851350977364589}
   - component: {fileID: 1817920182589679841}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GM-Climb-URP
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3733,7 +3773,7 @@ GameObject:
   - component: {fileID: 8339860030967082420}
   - component: {fileID: 6078124240309426558}
   - component: {fileID: 7817287591119172594}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GM-Climb-URP (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3888,7 +3928,7 @@ GameObject:
   - component: {fileID: 5369731754277005794}
   - component: {fileID: 7881837960197315880}
   - component: {fileID: 6144222378192779172}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GM-Climb-URP (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
