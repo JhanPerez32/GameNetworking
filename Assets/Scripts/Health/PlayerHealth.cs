@@ -12,6 +12,7 @@ public class PlayerHealth : NetworkBehaviour
     public event Action<float> OnDamageEvent;
 
     public GameObject playerHitFX;
+    public GameObject explosionFX;
 
     public override void Spawned()
     {
@@ -23,6 +24,12 @@ public class PlayerHealth : NetworkBehaviour
     {
         Debug.Log($"Health changed to: {NetworkedHealth}");
         OnDamageEvent?.Invoke(NetworkedHealth/MaxHealth);
+
+        // Check if health has reached zero
+        if (NetworkedHealth <= 0)
+        {
+            HandleDeath();
+        }
     }
     
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
@@ -41,6 +48,16 @@ public class PlayerHealth : NetworkBehaviour
         {
             Instantiate(playerHitFX, position, Quaternion.identity);
         }
+    }
+
+    private void HandleDeath()
+    {
+        if (explosionFX != null)
+        {
+            Instantiate(explosionFX, transform.position, Quaternion.identity);
+        }
+
+        Runner.Despawn(Object);
     }
 
 }

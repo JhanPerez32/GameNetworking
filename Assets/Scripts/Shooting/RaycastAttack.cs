@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class RaycastAttack : NetworkBehaviour
 {
-    public float Damage = 10;
+    public float Damage = 20;
     public PlayerMovement PlayerMovement;
 
     public GameObject tracerPrefab;
@@ -45,8 +45,9 @@ public class RaycastAttack : NetworkBehaviour
 
     private void CreateTracerEffect(Vector3 hitPoint)
     {
-        NetworkObject tracerNetworkObject = Runner.Spawn(tracerPrefab, firePoint.position, Quaternion.identity);
-        GameObject tracer = tracerNetworkObject.gameObject;
+        GameObject tracer = Instantiate(tracerPrefab, firePoint.position, Quaternion.identity);
+        //NetworkObject tracerNetworkObject = Runner.Spawn(tracerPrefab, firePoint.position, Quaternion.identity);
+        //GameObject tracer = tracerNetworkObject.gameObject;
 
         //tracer.GetComponent<Projectile>()?.Init();
 

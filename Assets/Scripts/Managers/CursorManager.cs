@@ -23,7 +23,7 @@ public class CursorManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.T))
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             ToggleCursorLock();
         }

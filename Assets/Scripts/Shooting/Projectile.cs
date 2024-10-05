@@ -13,15 +13,15 @@ public class Projectile : NetworkBehaviour
     [SerializeField] private string[] despawnLayerNames;
     private LayerMask despawnLayers;
 
-    public void Init()
-    {
-        life = TickTimer.CreateFromSeconds(Runner, lifeTime);
-    }
-
-    private void Awake()
+    private void Start()
     {
         despawnLayers = LayerMask.GetMask(despawnLayerNames);
         Debug.Log("Despawn layers assigned: " + despawnLayers.value);
+    }
+
+    public void Init()
+    {
+        life = TickTimer.CreateFromSeconds(Runner, lifeTime);
     }
 
     public override void FixedUpdateNetwork()
@@ -37,8 +37,6 @@ public class Projectile : NetworkBehaviour
     {
         if (IsInDespawnLayer(collision.gameObject))
         {
-            Debug.LogWarning($"Hit Collider {collision.collider.name} on layer {collision.gameObject.layer}, despawning projectile.");
-
             DestroyTracer();
         }
     }

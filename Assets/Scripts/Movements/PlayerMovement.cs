@@ -4,6 +4,9 @@ using UnityEngine.Serialization;
 
 public class PlayerMovement : NetworkBehaviour
 {
+    public int PlayerID => Runner.LocalPlayer.PlayerId;
+
+
     private Vector3 _velocity;
     private bool _jumpPressed;
 
@@ -26,10 +29,12 @@ public class PlayerMovement : NetworkBehaviour
     {
         _controller = GetComponent<CharacterController>();
     }
-    
+
     public override void Spawned()
     {
         if (!HasStateAuthority) return;
+
+        MultiplayerChat.Instance.SetUsername(Runner.LocalPlayer.PlayerId);
 
         mainCamera = Camera.main;
         if (mainCamera != null)
@@ -76,6 +81,8 @@ public class PlayerMovement : NetworkBehaviour
     public override void FixedUpdateNetwork()
     {
         // FixedUpdateNetwork is only executed on the StateAuthority
+
+        Debug.LogWarning($"Player: {Runner.LocalPlayer.PlayerId}");
 
         if (!_controller.enabled) return;
 
