@@ -11,24 +11,41 @@ public class PlayerHealth : NetworkBehaviour
     private const float MaxHealth = 200f;
     public event Action<float> OnDamageEvent;
 
+    [Header("Health Regen")]
+    [Range(50f, 100f)]
+    public float regenRate;
+    [Range(1f, 10f)]
+    public float regenCooldown;
+    private float lastDamageTime;
+
+    private Coroutine regenCoroutine;
+
+    [Header("Visual FX's")]
     public GameObject playerHitFX;
     public GameObject explosionFX;
 
     public override void Spawned()
     {
         NetworkedHealth = MaxHealth;
+        lastDamageTime = Runner.DeltaTime;
     }
-
 
     void HealthChanged()
     {
         Debug.Log($"Health changed to: {NetworkedHealth}");
         OnDamageEvent?.Invoke(NetworkedHealth/MaxHealth);
 
-        // Check if health has reached zero
         if (NetworkedHealth <= 0)
         {
             HandleDeath();
+        }
+        else
+        {
+            if (regenCoroutine != null)
+            {
+                StopCoroutine(regenCoroutine);
+                regenCoroutine = null;
+            }
         }
     }
     
@@ -58,6 +75,29 @@ public class PlayerHealth : NetworkBehaviour
         }
 
         Runner.Despawn(Object);
+    }
+
+    private void Update()
+    {
+        if (Runner.DeltaTime - lastDamageTime >= regenCooldown && regenCoroutine == null)
+        {
+            regenCoroutine = StartCoroutine(RegenerateHealth());
+        }
+    }
+
+    private System.Collections.IEnumerator RegenerateHealth()
+    {
+        while (NetworkedHealth < MaxHealth)
+        {
+            NetworkedHealth += regenRate * Runner.DeltaTime;
+            NetworkedHealth = Mathf.Min(NetworkedHealth, MaxHealth);
+
+            OnDamageEvent?.Invoke(NetworkedHealth / MaxHealth);
+
+            yield return null;
+        }
+
+        regenCoroutine = null;
     }
 
 }

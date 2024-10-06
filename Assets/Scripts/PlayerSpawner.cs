@@ -3,16 +3,31 @@ using System.Collections;
 using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
 {
     public GameObject PlayerPrefab;
+    public Slider UIHealthBar;
+
+    void Awake()
+    {
+        UIHealthBar.gameObject.SetActive(false);
+    }
 
     public void PlayerJoined(PlayerRef player)
     {
         if (player == Runner.LocalPlayer)
         {
-            Runner.Spawn(PlayerPrefab, new Vector3(0, 1, 0), Quaternion.identity, player);
+            var spawnedPlayer = Runner.Spawn(PlayerPrefab, new Vector3(0, 1, 0), Quaternion.identity, player);
+
+            UIHealthBar.gameObject.SetActive(true);
+
+            var healthBarController = spawnedPlayer.GetComponent<HealthBarController>();
+            if (healthBarController)
+            {
+                healthBarController.UIHealthBar = UIHealthBar;
+            }
         }
     }
 
