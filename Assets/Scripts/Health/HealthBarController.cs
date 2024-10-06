@@ -24,6 +24,7 @@ public class HealthBarController : MonoBehaviour
             WorldSpaceHealthBar.value = 1;
         }
     }
+
     private void LateUpdate()
     {
         if (HealthBarContainer)

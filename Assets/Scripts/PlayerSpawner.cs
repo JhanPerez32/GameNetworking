@@ -8,11 +8,13 @@ using UnityEngine.UI;
 public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
 {
     public GameObject PlayerPrefab;
+    public GameObject StatusBar;
     public Slider UIHealthBar;
+    public Slider UIGunEnergyBar;
 
     void Awake()
     {
-        UIHealthBar.gameObject.SetActive(false);
+        StatusBar.SetActive(false);
     }
 
     public void PlayerJoined(PlayerRef player)
@@ -21,12 +23,18 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
         {
             var spawnedPlayer = Runner.Spawn(PlayerPrefab, new Vector3(0, 1, 0), Quaternion.identity, player);
 
-            UIHealthBar.gameObject.SetActive(true);
+            StatusBar.SetActive(true);
 
             var healthBarController = spawnedPlayer.GetComponent<HealthBarController>();
             if (healthBarController)
             {
                 healthBarController.UIHealthBar = UIHealthBar;
+            }
+
+            var energyGunBar = spawnedPlayer.GetComponent<RaycastAttack>();
+            if (energyGunBar)
+            {
+                energyGunBar.UIGunEnergyBar = UIGunEnergyBar;
             }
         }
     }

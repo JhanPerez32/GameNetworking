@@ -1,5 +1,6 @@
 using Fusion;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RaycastAttack : NetworkBehaviour
 {
@@ -12,6 +13,24 @@ public class RaycastAttack : NetworkBehaviour
     public const float fireDelay = .5f;
     public float delayTimeLeft;
 
+    [Header("UI Health bar")]
+    public Slider UIGunEnergyBar;
+    public float maxGunEnergy = 100f;  // Maximum gun energy
+    public float gunEnergyCost = 10f;  // Energy cost per shot
+    private float currentGunEnergy;
+
+    public override void Spawned()
+    {
+        base.Spawned();
+        currentGunEnergy = maxGunEnergy;
+
+        if (UIGunEnergyBar != null)
+        {
+            UIGunEnergyBar.maxValue = maxGunEnergy;
+            UIGunEnergyBar.value = currentGunEnergy;
+        }
+    }
+
     public override void FixedUpdateNetwork()
     {
         if (!HasStateAuthority) return;
@@ -22,11 +41,19 @@ public class RaycastAttack : NetworkBehaviour
             ray.origin += PlayerMovement.mainCamera.transform.forward;
 
             delayTimeLeft -= Runner.DeltaTime;
+
             if (!Input.GetMouseButton(0)) return;
             if (delayTimeLeft > 0) return;
+            if (currentGunEnergy < gunEnergyCost) return;
 
             delayTimeLeft = fireDelay;
             Debug.Log("Firing Raycast");
+
+            currentGunEnergy -= gunEnergyCost;  // Reduce gun energy
+            if (UIGunEnergyBar != null)
+            {
+                UIGunEnergyBar.value = currentGunEnergy;  // Update UI Gun energy slider
+            }
 
             if (Physics.Raycast(ray.origin, ray.direction, out var hit))
             {
