@@ -17,7 +17,9 @@ public class RaycastAttack : NetworkBehaviour
     public Slider UIGunEnergyBar;
     public float maxGunEnergy = 100f;  // Maximum gun energy
     public float gunEnergyCost = 10f;  // Energy cost per shot
-    private float currentGunEnergy;
+    [HideInInspector] public float currentGunEnergy;
+
+    public bool isRefilling = false;
 
     public override void Spawned()
     {
@@ -31,9 +33,19 @@ public class RaycastAttack : NetworkBehaviour
         }
     }
 
+    public void RefillGunEnergy(float amount)
+    {
+        currentGunEnergy = Mathf.Min(currentGunEnergy + amount, maxGunEnergy);
+
+        if (UIGunEnergyBar != null)
+        {
+            UIGunEnergyBar.value = currentGunEnergy;
+        }
+    }
+
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority) return;
+        if (!HasStateAuthority || isRefilling) return;
 
         if (CursorManager.Instance.IsCursorLocked())
         {
