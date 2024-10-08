@@ -24,10 +24,22 @@ public class PlayerHealth : NetworkBehaviour
     public GameObject playerHitFX;
     public GameObject explosionFX;
 
+    private bool isProtected;
+
     public override void Spawned()
     {
         NetworkedHealth = MaxHealth;
         lastDamageTime = Runner.DeltaTime;
+
+        // Start spawn protection
+        isProtected = true;
+        StartCoroutine(DisableSpawnProtection());
+    }
+
+    private System.Collections.IEnumerator DisableSpawnProtection()
+    {
+        yield return new WaitForSeconds(5f);
+        isProtected = false;
     }
 
     void HealthChanged()
@@ -52,7 +64,12 @@ public class PlayerHealth : NetworkBehaviour
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void DealDamageRpc(float damage)
     {
-        Debug.Log("Received DealDamageRpc on StateAuthority, modifying Networked variable");
+        if (isProtected)
+        {
+            Debug.Log("Player is protected from damage.");
+            return;
+        }
+
         NetworkedHealth -= damage;
 
         RPC_HitFx(transform.position);

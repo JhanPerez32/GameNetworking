@@ -82,8 +82,6 @@ public class PlayerMovement : NetworkBehaviour
     {
         // FixedUpdateNetwork is only executed on the StateAuthority
 
-        Debug.LogWarning($"Player: {Runner.LocalPlayer.PlayerId}");
-
         if (!_controller.enabled) return;
 
         if (_controller.isGrounded)
