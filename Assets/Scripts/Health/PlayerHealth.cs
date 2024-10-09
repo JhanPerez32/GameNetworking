@@ -1,7 +1,6 @@
 using System;
 using Fusion;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class PlayerHealth : NetworkBehaviour
 {
@@ -17,6 +16,8 @@ public class PlayerHealth : NetworkBehaviour
     [Range(1f, 10f)]
     public float regenCooldown;
     private float lastDamageTime;
+
+    public bool isRegenerating;
 
     private Coroutine regenCoroutine;
 
@@ -42,22 +43,32 @@ public class PlayerHealth : NetworkBehaviour
         isProtected = false;
     }
 
+    private System.Collections.IEnumerator HealthRegenCoroutine()
+    {
+        // Wait until the cooldown expires before allowing regeneration
+        yield return new WaitForSeconds(regenCooldown);
+
+        Debug.LogWarning("Regenerating");
+
+        while (NetworkedHealth < MaxHealth)
+        {
+            // Regenerate health
+            NetworkedHealth = Mathf.Min(NetworkedHealth + regenRate * Time.deltaTime, MaxHealth);
+            OnDamageEvent?.Invoke(NetworkedHealth / MaxHealth);
+            yield return null; // Wait for the next frame
+        }
+
+        // Stop regenerating when health is maxed out
+        regenCoroutine = null; // Reset coroutine reference
+    }
+
     void HealthChanged()
     {
-        Debug.Log($"Health changed to: {NetworkedHealth}");
         OnDamageEvent?.Invoke(NetworkedHealth/MaxHealth);
 
         if (NetworkedHealth <= 0)
         {
             HandleDeath();
-        }
-        else
-        {
-            if (regenCoroutine != null)
-            {
-                StopCoroutine(regenCoroutine);
-                regenCoroutine = null;
-            }
         }
     }
     
@@ -66,11 +77,16 @@ public class PlayerHealth : NetworkBehaviour
     {
         if (isProtected)
         {
-            Debug.Log("Player is protected from damage.");
-            return;
+            return; // Ignore damage during spawn protection
         }
 
         NetworkedHealth -= damage;
+
+        lastDamageTime = Runner.DeltaTime;
+        if (regenCoroutine == null)
+        {
+            regenCoroutine = StartCoroutine(HealthRegenCoroutine());
+        }
 
         RPC_HitFx(transform.position);
     }
@@ -93,28 +109,4 @@ public class PlayerHealth : NetworkBehaviour
 
         Runner.Despawn(Object);
     }
-
-    private void Update()
-    {
-        if (Runner.DeltaTime - lastDamageTime >= regenCooldown && regenCoroutine == null)
-        {
-            regenCoroutine = StartCoroutine(RegenerateHealth());
-        }
-    }
-
-    private System.Collections.IEnumerator RegenerateHealth()
-    {
-        while (NetworkedHealth < MaxHealth)
-        {
-            NetworkedHealth += regenRate * Runner.DeltaTime;
-            NetworkedHealth = Mathf.Min(NetworkedHealth, MaxHealth);
-
-            OnDamageEvent?.Invoke(NetworkedHealth / MaxHealth);
-
-            yield return null;
-        }
-
-        regenCoroutine = null;
-    }
-
 }

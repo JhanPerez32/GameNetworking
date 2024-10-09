@@ -484,7 +484,6 @@ GameObject:
   - component: {fileID: 6569735988225128206}
   - component: {fileID: 4392312949243510146}
   - component: {fileID: 6411302053418406771}
-  - component: {fileID: 8214613332727942224}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -699,6 +698,11 @@ MonoBehaviour:
     type: 3}
   firePoint: {fileID: 1161947920849026711}
   delayTimeLeft: 0
+  UIGunEnergyBar: {fileID: 0}
+  maxGunEnergy: 100
+  gunEnergyCost: 5
+  currentGunEnergy: 0
+  isRefilling: 0
 --- !u!114 &4392312949243510146
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -726,23 +730,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b02428079c563124dbb210811cf5adcc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  regenRate: 50
-  regenCooldown: 10
+  regenRate: 65
+  regenCooldown: 3
+  isRegenerating: 0
   playerHitFX: {fileID: 1000011128802252, guid: 96730f8640590934eacb6f860058e7f9,
     type: 3}
   explosionFX: {fileID: 100002, guid: 799e3eff4ab8ad04286b37b1da70ebef, type: 3}
---- !u!114 &8214613332727942224
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4063585732672119984}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c72440ceaaef344c98354f5c8a847a9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &5137203261811014778
 GameObject:
   m_ObjectHideFlags: 0

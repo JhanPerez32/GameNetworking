@@ -8,22 +8,55 @@ using UnityEngine.UI;
 public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
 {
     public GameObject PlayerPrefab;
+    //public GameObject SelectSpawnPointUI;
     public GameObject StatusBar;
     public Slider UIHealthBar;
     public Slider UIGunEnergyBar;
 
+    public SpawnManager spawnManager;
+    public int selectedSpawnIndex = 0;
+
     void Awake()
     {
+        //SelectSpawnPointUI.SetActive(false);
         StatusBar.SetActive(false);
+        Cursor.visible = true;
     }
 
     public void PlayerJoined(PlayerRef player)
     {
         if (player == Runner.LocalPlayer)
         {
-            var spawnedPlayer = Runner.Spawn(PlayerPrefab, new Vector3(0, 1, 0), Quaternion.identity, player);
+            //SelectSpawnPointUI.SetActive(true);
+
+            SpawnPlayer();
+            /*The Player Spawns when being spawned by Player Joined, however this line of code
+             * var spawnedPlayer = Runner.Spawn(PlayerPrefab, spawnPosition, Quaternion.identity, Runner.LocalPlayer);
+             * is showing error that it is Null
+             */
+        }
+    }
+
+    //Accessed by the UI Button PlayerCanvas -> Selection
+    public void SetSpawnLocation(int index)
+    {
+        selectedSpawnIndex = index;
+
+        SpawnPlayer();
+    }
+
+    private void SpawnPlayer()
+    {
+        if (selectedSpawnIndex >= 0 && selectedSpawnIndex < spawnManager.spawnPoints.Length)
+        {
+            Vector3 spawnPosition = spawnManager.spawnPoints[selectedSpawnIndex].position;
+            Debug.LogWarning("Spawning player at: " + spawnPosition);
+
+            var spawnedPlayer = Runner.Spawn(PlayerPrefab, spawnPosition, Quaternion.identity, Runner.LocalPlayer);
 
             StatusBar.SetActive(true);
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
 
             var healthBarController = spawnedPlayer.GetComponent<HealthBarController>();
             if (healthBarController)
@@ -37,40 +70,9 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
                 energyGunBar.UIGunEnergyBar = UIGunEnergyBar;
             }
         }
-    }
-
-
-    //public SpawnManager spawnManager;
-    //private int selectedSpawnIndex = 0;
-
-    /*public void PlayerJoined(PlayerRef player)
-    {
-        if (player == Runner.LocalPlayer)
+        else
         {
-            //Debug.LogWarning("Waiting for player to select spawn location...");
-
-            //Vector3 spawnPosition = spawnManager.spawnPoints[selectedSpawnIndex].position;
-            Runner.Spawn(PlayerPrefab, new Vector3(0, 1, 0), Quaternion.identity, player);
-            //Debug.LogWarning("Player spawned at: " + spawnManager.spawnPoints[selectedSpawnIndex].name);
+            Debug.LogError("Selected spawn index is out of bounds. Index: " + selectedSpawnIndex);
         }
     }
-
-    public void SetSpawnLocation(int index)
-    {
-        selectedSpawnIndex = index;
-        Debug.LogWarning("Selected spawn index: " + selectedSpawnIndex);
-    }
-
-    public void SpawnPlayer()
-    {
-        if (Runner == null)
-        {
-            Debug.LogError("Runner is not initialized!");
-            return;
-        }
-
-        Vector3 spawnPosition = spawnManager.spawnPoints[selectedSpawnIndex].position;
-        Runner.Spawn(PlayerPrefab, spawnPosition, Quaternion.identity, Runner.LocalPlayer);
-        Debug.LogWarning("Player spawned at: " + spawnManager.spawnPoints[selectedSpawnIndex].name);
-    }*/
 }
