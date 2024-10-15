@@ -1671,7 +1671,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1765901243}
         m_TargetAssemblyTypeName: Register, Assembly-CSharp
-        m_MethodName: RegisterUser
+        m_MethodName: LoginUser
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
