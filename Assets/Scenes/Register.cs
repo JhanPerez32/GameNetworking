@@ -12,6 +12,9 @@ public class Register : MonoBehaviour
 {
     //private Dictionary<string, int> UserInfo = new Dictionary<string, int>();
 
+    [SerializeField] GameObject closeRegLogin;
+    [SerializeField] GameObject profileSection;
+
     [Header("Register")]
     public TMP_InputField usernameInput;
     public TMP_InputField passwordInput;
@@ -85,6 +88,8 @@ public class Register : MonoBehaviour
             {
                 Debug.Log("Login successful!");
                 resultLogin.text = "Login Successful!";
+                closeRegLogin.SetActive(false);
+                profileSection.SetActive(true);
             }
             else
             {
