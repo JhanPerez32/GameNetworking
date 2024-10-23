@@ -1,12 +1,8 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine.UI;
-using Newtonsoft.Json.Converters;
-using UnityEngine.TextCore.Text;
 
 public class Register : MonoBehaviour
 {
@@ -14,6 +10,7 @@ public class Register : MonoBehaviour
 
     [SerializeField] GameObject closeRegLogin;
     [SerializeField] GameObject profileSection;
+    [SerializeField] Http http;
 
     [Header("Register")]
     public TMP_InputField usernameInput;
@@ -48,7 +45,6 @@ public class Register : MonoBehaviour
 
         if (passwordInput.text == rewritePasswordInput.text)
         {
-            // Create a UserAccount object
             var newUser = new UserAccount()
             {
                 username = usernameInput.text,
@@ -88,8 +84,11 @@ public class Register : MonoBehaviour
             {
                 Debug.Log("Login successful!");
                 resultLogin.text = "Login Successful!";
+
                 closeRegLogin.SetActive(false);
                 profileSection.SetActive(true);
+
+                http.LoggedIn();
             }
             else
             {
@@ -108,7 +107,6 @@ public class Register : MonoBehaviour
 [Serializable]
 public struct UserAccount
 {
-    //[JsonConverter(typeof(StringEnumConverter))]
     public string username;
     public string password;
 }

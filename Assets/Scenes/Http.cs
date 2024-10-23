@@ -10,26 +10,56 @@ using TMPro;
 public class Http : MonoBehaviour
 {
     const string GET_USERS = "https://reqres.in/api/users/";
-    const string PUT_USER_2 = "https://reqres.in/api/users/2";
 
-    [SerializeField] private RawImage imagetoChange;
+    [SerializeField] private GameObject userPrefab;
+    [SerializeField] private Transform userContainer;
+
+    private bool isProfilesLoaded = false;
+
+    /*[SerializeField] private RawImage imagetoChange;
     [SerializeField] private TextMeshProUGUI emailText;
     [SerializeField] private TextMeshProUGUI firstNameText;
-    [SerializeField] private TextMeshProUGUI lastNameText;
+    [SerializeField] private TextMeshProUGUI lastNameText;*/
 
-    private const string IMAGE_URL = "https://reqres.in/img/faces/3-image.jpg";
-
-    public void Start()
+    public void LoggedIn()
     {
-        StartCoroutine(UnityGetRequest(GET_USERS));
-
-        StartCoroutine(DownloadImage(IMAGE_URL, (texture) =>
+        if (!isProfilesLoaded)
         {
-            if (imagetoChange != null)
+            StartCoroutine(UnityGetRequest(GET_USERS, (success, result) =>
             {
-                imagetoChange.texture = texture;
-            }
-        }));
+                if (success)
+                {
+                    var data = JsonConvert.DeserializeObject<Datas>(result);
+
+                    foreach (var user in data.data)
+                    {
+                        GameObject userEntry = Instantiate(userPrefab, userContainer);
+
+                        var avatarImage = userEntry.transform.Find("Avatar").GetComponent<RawImage>();
+                        var emailText = userEntry.transform.Find("EmailText").GetComponent<TextMeshProUGUI>();
+                        var firstNameText = userEntry.transform.Find("FirstNameText").GetComponent<TextMeshProUGUI>();
+                        var lastNameText = userEntry.transform.Find("LastNameText").GetComponent<TextMeshProUGUI>();
+
+                        emailText.text = user.email;
+                        firstNameText.text = user.first_name;
+                        lastNameText.text = user.last_name;
+
+                        StartCoroutine(DownloadImage(user.avatar, (texture) =>
+                        {
+                            if (avatarImage != null)
+                            {
+                                avatarImage.texture = texture;
+                            }
+                        }));
+                    }
+                    isProfilesLoaded = true;
+                }
+                else
+                {
+                    Debug.LogError("Failed to fetch users");
+                }
+            }));
+        }
     }
 
     private static IEnumerator UnityGetRequest(string url, Action<bool, string> callback = null)
@@ -45,10 +75,7 @@ public class Http : MonoBehaviour
         }
         else
         {
-            Debug.Log(request.downloadHandler.text);
-            
-            var auth = JsonConvert.DeserializeObject<Datas>(request.downloadHandler.text);
-            
+            Debug.Log(request.downloadHandler.text);          
             callback?.Invoke(true, request.downloadHandler.text);
 
         }
@@ -81,7 +108,6 @@ public class Http : MonoBehaviour
             callback?.Invoke(true, request.downloadHandler.text);
         }
     }
-
 
     private IEnumerator UnityPutRequest(string url, string jsonData, Action<bool, string> callback = null)
     {
@@ -156,7 +182,7 @@ public struct Datas
     public int per_page;
     public int total;
     public int total_pages;
-
+    public Users[] data;
 }
 
 [System.Serializable]
