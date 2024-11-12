@@ -16,11 +16,6 @@ public class Http : MonoBehaviour
 
     private bool isProfilesLoaded = false;
 
-    /*[SerializeField] private RawImage imagetoChange;
-    [SerializeField] private TextMeshProUGUI emailText;
-    [SerializeField] private TextMeshProUGUI firstNameText;
-    [SerializeField] private TextMeshProUGUI lastNameText;*/
-
     public void LoggedIn()
     {
         if (!isProfilesLoaded)
