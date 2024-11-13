@@ -4,12 +4,12 @@ using System.Collections;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 public class Http : MonoBehaviour
 {
-    const string GET_USERS = "https://reqres.in/api/users/";
+    const string GET_USERS = "http://localhost:3000/users";
 
     [SerializeField] private GameObject userPrefab;
     [SerializeField] private Transform userContainer;
@@ -24,28 +24,19 @@ public class Http : MonoBehaviour
             {
                 if (success)
                 {
-                    var data = JsonConvert.DeserializeObject<Datas>(result);
+                    var users = JsonConvert.DeserializeObject<List<Users>>(result);
 
-                    foreach (var user in data.data)
+                    foreach (var user in users)
                     {
                         GameObject userEntry = Instantiate(userPrefab, userContainer);
 
-                        var avatarImage = userEntry.transform.Find("Avatar").GetComponent<RawImage>();
+                        var idText = userEntry.transform.Find("IdText").GetComponent<TextMeshProUGUI>();
+                        var usernameText = userEntry.transform.Find("UsernameText").GetComponent<TextMeshProUGUI>();
                         var emailText = userEntry.transform.Find("EmailText").GetComponent<TextMeshProUGUI>();
-                        var firstNameText = userEntry.transform.Find("FirstNameText").GetComponent<TextMeshProUGUI>();
-                        var lastNameText = userEntry.transform.Find("LastNameText").GetComponent<TextMeshProUGUI>();
 
+                        idText.text = user.id.ToString();
+                        usernameText.text = user.name;
                         emailText.text = user.email;
-                        firstNameText.text = user.first_name;
-                        lastNameText.text = user.last_name;
-
-                        StartCoroutine(DownloadImage(user.avatar, (texture) =>
-                        {
-                            if (avatarImage != null)
-                            {
-                                avatarImage.texture = texture;
-                            }
-                        }));
                     }
                     isProfilesLoaded = true;
                 }
@@ -57,6 +48,7 @@ public class Http : MonoBehaviour
         }
     }
 
+    //Display all users
     private static IEnumerator UnityGetRequest(string url, Action<bool, string> callback = null)
     {
         var request = UnityWebRequest.Get(url);
@@ -76,47 +68,35 @@ public class Http : MonoBehaviour
         }
     }
 
-    #region Other
-    private static IEnumerator UnityPostRequest(string url, string jsonData, Action<bool, string> callback = null)
+    //Add the new user
+    public IEnumerator UnityPostRequest(string url, string jsonData, Action<bool, string> callback = null)
     {
-        jsonData = "{\"name\":\"John\", \"job\":\"Developer\"}";
-
-        var request = UnityWebRequest.Post(url, jsonData, "application/json");
-        /*
         var request = new UnityWebRequest(url, "POST");
         byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
         request.uploadHandler = new UploadHandlerRaw(bodyRaw);
         request.downloadHandler = new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
-        */
 
         yield return request.SendWebRequest();
 
-        if (request.result is UnityWebRequest.Result.ConnectionError or UnityWebRequest.Result.ProtocolError)
+        if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
         {
             Debug.LogError(request.error);
             callback?.Invoke(false, request.error);
         }
         else
         {
-            Debug.Log(request.downloadHandler.text);
+            Debug.Log("User added to localhost: " + request.downloadHandler.text);
             callback?.Invoke(true, request.downloadHandler.text);
         }
     }
 
+    #region Other
     private IEnumerator UnityPutRequest(string url, string jsonData, Action<bool, string> callback = null)
     {
         jsonData = "{\"name\":\"John\", \"job\":\"Senior Developer\"}";
 
         var request = UnityWebRequest.Put(url, jsonData);
-
-        /*
-         var request = new UnityWebRequest(url, "PUT");
-        byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
-        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-        request.downloadHandler = new DownloadHandlerBuffer();
-        request.SetRequestHeader("Content-Type", "application/json");
-        */
 
         yield return request.SendWebRequest();
 
@@ -149,7 +129,6 @@ public class Http : MonoBehaviour
             callback?.Invoke(true, "");
         }
     }
-    #endregion
 
     private IEnumerator DownloadImage(string imageUrl, Action<Texture2D> Callback)
     {
@@ -168,24 +147,13 @@ public class Http : MonoBehaviour
             Callback?.Invoke(texture);
         }
     }
-}
-
-[System.Serializable]
-public struct Datas
-{
-    public int page;
-    public int per_page;
-    public int total;
-    public int total_pages;
-    public Users[] data;
+    #endregion
 }
 
 [System.Serializable]
 public struct Users
 {
     public int id;
+    public string name;
     public string email;
-    public string first_name;
-    public string last_name;
-    public string avatar;
 }

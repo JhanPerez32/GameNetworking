@@ -34,8 +34,8 @@ app.get('/users/:id', (req, res) =>{
 //Register
 app.post('/users', (req, res)=>{
     const user = req.body;
-    let insertQuery = `insert into users(id, name, email, password) 
-    values('${user.id}','${user.name}','${user.email}','${user.password}')`
+    let insertQuery = `insert into users(name, email, password) 
+    values('${user.name}','${user.email}','${user.password}')`;
 
     client.query(insertQuery, (err, result)=>{
         if(!err){

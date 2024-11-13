@@ -50,7 +50,7 @@ public class MultiplayerChat : NetworkBehaviour
         }
         else
         {
-            Debug.LogError("Player username not found!");
+            Debug.LogError("Player name not found!");
         }
     }
 

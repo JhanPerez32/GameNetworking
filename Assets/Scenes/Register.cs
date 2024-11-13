@@ -3,43 +3,53 @@ using UnityEngine;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections;
+using System.Text.RegularExpressions;
 
 public class Register : MonoBehaviour
 {
-    //private Dictionary<string, int> UserInfo = new Dictionary<string, int>();
-
     [SerializeField] GameObject closeRegLogin;
     [SerializeField] GameObject profileSection;
     [SerializeField] Http http;
 
     [Header("Register")]
     public TMP_InputField usernameInput;
+    public TMP_InputField emailAddInput;
     public TMP_InputField passwordInput;
     public TMP_InputField rewritePasswordInput;
     public Button register;
-
-    public TextMeshProUGUI resultRegistration;
 
     [Header("Login")]
     public TMP_InputField usernameLogin;
     public TMP_InputField passwordLogin;
     public Button login;
 
-    public TextMeshProUGUI resultLogin;
+    [Header("Text Message")]
+    public TextMeshProUGUI notificationResult;
 
     private void Start()
     {
         register.onClick.AddListener(RegisterUser);
         login.onClick.AddListener(LoginUser);
+
+        notificationResult.text = "";
     }
 
     public void RegisterUser()
     {
         if (string.IsNullOrEmpty(usernameInput.text) || 
+            string.IsNullOrEmpty(emailAddInput.text) ||
             string.IsNullOrEmpty(passwordInput.text) || 
             string.IsNullOrEmpty(rewritePasswordInput.text))
         {
-            resultRegistration.text = "Missing fields!";
+            notificationResult.text = "Missing fields!";
+            return;
+        }
+
+        string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+        if (!Regex.IsMatch(emailAddInput.text, emailPattern))
+        {
+            notificationResult.text = "Email is not recognized!";
             return;
         }
 
@@ -47,7 +57,8 @@ public class Register : MonoBehaviour
         {
             var newUser = new UserAccount()
             {
-                username = usernameInput.text,
+                name = usernameInput.text,
+                email = emailAddInput.text,
                 password = passwordInput.text
             };
 
@@ -57,21 +68,34 @@ public class Register : MonoBehaviour
             PlayerPrefs.SetString("UserAccount", userJson);
             PlayerPrefs.Save();
 
+            StartCoroutine(http.UnityPostRequest("http://localhost:3000/users", userJson, (success, response) =>
+            {
+                if (success)
+                {
+                    notificationResult.text = "Registration Successful!";
+                }
+                else
+                {
+                    notificationResult.text = "Failed to register on the server.";
+                }
+            }));
+
             Debug.Log("User registered: " + userJson);
-            resultRegistration.text = "Registration Successful!";
+            notificationResult.text = "Registration Successful!";
         }
         else
         {
-            resultRegistration.text = "Passwords do not match!";
+            notificationResult.text = "Passwords do not match!";
         }
+        StartCoroutine(ClearNotificationAfterDelay(2));
     }
 
     public void LoginUser()
     {
-        if (string.IsNullOrEmpty(usernameLogin.text) ||
+        if (string.IsNullOrEmpty(emailAddInput.text) ||
             string.IsNullOrEmpty(passwordLogin.text))
         {
-            resultLogin.text = "Missing fields!";
+            notificationResult.text = "Missing fields!";
             return;
         }
 
@@ -80,10 +104,9 @@ public class Register : MonoBehaviour
             string storedUserJson = PlayerPrefs.GetString("UserAccount");
             UserAccount storedUser = JsonConvert.DeserializeObject<UserAccount>(storedUserJson);
 
-            if (storedUser.username == usernameLogin.text && storedUser.password == passwordLogin.text)
+            if (storedUser.email == emailAddInput.text && storedUser.password == passwordLogin.text)
             {
-                Debug.Log("Login successful!");
-                resultLogin.text = "Login Successful!";
+                notificationResult.text = "Login Successful!";
 
                 closeRegLogin.SetActive(false);
                 profileSection.SetActive(true);
@@ -92,22 +115,29 @@ public class Register : MonoBehaviour
             }
             else
             {
-                Debug.Log("Invalid username or password.");
-                resultLogin.text = "Invalid Username or Password.";
+                notificationResult.text = "Invalid Username or Password.";
             }
         }
         else
         {
-            Debug.Log("No user registered.");
-            resultLogin.text = "No registered user found.";
+            notificationResult.text = "No registered user found.";
         }
+        StartCoroutine(ClearNotificationAfterDelay(2));
+    }
+
+    private IEnumerator ClearNotificationAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        notificationResult.text = "";
     }
 }
+
 
 [Serializable]
 public struct UserAccount
 {
-    public string username;
+    public string name;
+    public string email;
     public string password;
 }
 
