@@ -22,14 +22,17 @@ app.get('/users', (req, res) =>{
 })
 
 //Getting one user
-app.get('/users/:id', (req, res) =>{
-    client.query(`Select * from users where id=${req.params.id}`, (err,result)=>{
-        if(!err){
+app.get('/users/email/:email', (req, res) => {
+    const email = req.params.email;
+    client.query(`SELECT * FROM users WHERE email='${email}'`, (err, result) => {
+        if (!err) {
             res.send(result.rows);
+        } else {
+            console.log(err.message);
         }
     });
     client.end;
-})
+});
 
 //Register
 app.post('/users', (req, res)=>{
@@ -47,19 +50,25 @@ app.post('/users', (req, res)=>{
     client.end;
 })
 
-//Change Password
+//Change Content
 app.put('/users/:id', (req, res)=>{
-    const user = req.body;
-    let updateQuery = `update users set name = '${user.name}', 
-    email = '${user.email}',
-    password = '${user.password}'
-    where id='${req.params.id}'`;
+    const { password } = req.body;
+    if (!password) {
+        res.status(400).send("Password is required.");
+        return;
+    }
 
-    client.query(updateQuery, (err, result)=>{
-        if(!err){
+    const updateQuery = `
+        UPDATE users
+        SET password = '${password}'
+        WHERE id = '${req.params.id}'`;
+
+    client.query(updateQuery, (err, result) => {
+        if (!err) {
             res.send('Password Changed Successfully');
         } else {
             console.log(err.message);
+            res.status(500).send("Failed to update password.");
         }
     });
     client.end;

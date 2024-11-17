@@ -8,8 +8,6 @@ using System.Text.RegularExpressions;
 
 public class Register : MonoBehaviour
 {
-    [SerializeField] GameObject closeRegLogin;
-    [SerializeField] GameObject profileSection;
     [SerializeField] Http http;
 
     [Header("Register")]
@@ -19,18 +17,12 @@ public class Register : MonoBehaviour
     public TMP_InputField rewritePasswordInput;
     public Button register;
 
-    [Header("Login")]
-    public TMP_InputField usernameLogin;
-    public TMP_InputField passwordLogin;
-    public Button login;
-
     [Header("Text Message")]
     public TextMeshProUGUI notificationResult;
 
     private void Start()
     {
         register.onClick.AddListener(RegisterUser);
-        login.onClick.AddListener(LoginUser);
 
         notificationResult.text = "";
     }
@@ -86,41 +78,6 @@ public class Register : MonoBehaviour
         else
         {
             notificationResult.text = "Passwords do not match!";
-        }
-        StartCoroutine(ClearNotificationAfterDelay(2));
-    }
-
-    public void LoginUser()
-    {
-        if (string.IsNullOrEmpty(emailAddInput.text) ||
-            string.IsNullOrEmpty(passwordLogin.text))
-        {
-            notificationResult.text = "Missing fields!";
-            return;
-        }
-
-        if (PlayerPrefs.HasKey("UserAccount"))
-        {
-            string storedUserJson = PlayerPrefs.GetString("UserAccount");
-            UserAccount storedUser = JsonConvert.DeserializeObject<UserAccount>(storedUserJson);
-
-            if (storedUser.email == emailAddInput.text && storedUser.password == passwordLogin.text)
-            {
-                notificationResult.text = "Login Successful!";
-
-                closeRegLogin.SetActive(false);
-                profileSection.SetActive(true);
-
-                http.LoggedIn();
-            }
-            else
-            {
-                notificationResult.text = "Invalid Username or Password.";
-            }
-        }
-        else
-        {
-            notificationResult.text = "No registered user found.";
         }
         StartCoroutine(ClearNotificationAfterDelay(2));
     }

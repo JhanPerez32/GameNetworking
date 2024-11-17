@@ -6,11 +6,10 @@ using UnityEngine;
 using UnityEngine.Networking;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class Http : MonoBehaviour
 {
-    const string GET_USERS = "http://localhost:3000/users";
-
     [SerializeField] private GameObject userPrefab;
     [SerializeField] private Transform userContainer;
 
@@ -20,36 +19,58 @@ public class Http : MonoBehaviour
     {
         if (!isProfilesLoaded)
         {
-            StartCoroutine(UnityGetRequest(GET_USERS, (success, result) =>
+            string loggedInEmail = PlayerPrefs.GetString("LoggedInEmail", string.Empty);
+            if (string.IsNullOrEmpty(loggedInEmail))
+            {
+                Debug.LogError("No logged-in email found!");
+                return;
+            }
+
+            string url = $"http://localhost:3000/users/email/{UnityWebRequest.EscapeURL(loggedInEmail)}";
+
+            StartCoroutine(UnityGetRequest(url, (success, result) =>
             {
                 if (success)
                 {
-                    var users = JsonConvert.DeserializeObject<List<Users>>(result);
-
-                    foreach (var user in users)
+                    var user = JsonConvert.DeserializeObject<List<Users>>(result);
+                    if (user.Count > 0)
                     {
                         GameObject userEntry = Instantiate(userPrefab, userContainer);
 
-                        var idText = userEntry.transform.Find("IdText").GetComponent<TextMeshProUGUI>();
-                        var usernameText = userEntry.transform.Find("UsernameText").GetComponent<TextMeshProUGUI>();
-                        var emailText = userEntry.transform.Find("EmailText").GetComponent<TextMeshProUGUI>();
+                        var idText = userEntry.transform.Find("Profile Section/IdText").GetComponent<TextMeshProUGUI>();
+                        var usernameText = userEntry.transform.Find("Profile Section/UsernameText").GetComponent<TextMeshProUGUI>();
+                        var emailText = userEntry.transform.Find("Profile Section/EmailText").GetComponent<TextMeshProUGUI>();
 
-                        idText.text = user.id.ToString();
-                        usernameText.text = user.name;
-                        emailText.text = user.email;
+                        idText.text = user[0].id.ToString();
+                        usernameText.text = user[0].name;
+                        emailText.text = user[0].email;
+
+                        /*DeleteAccount deleteAccountScript = userEntry.GetComponent<DeleteAccount>();
+
+                        TMP_InputField emailInputField = userEntry.transform.Find("DeleteAccount/Inputs/InputEmailAdd").GetComponent<TMP_InputField>();
+                        TMP_InputField passwordInputField = userEntry.transform.Find("DeleteAccount/Inputs/EnterPassword").GetComponent<TMP_InputField>();
+                        Button deleteButton = userEntry.transform.Find("DeleteAccount/Inputs/DeleteButton").GetComponent<Button>();
+                        TextMeshProUGUI resultDelete = userEntry.transform.Find("DeleteAccount/Inputs/ResultText").GetComponent<TextMeshProUGUI>();
+
+                        deleteAccountScript.SetReferences(emailInputField, passwordInputField, deleteButton, resultDelete);*/
+
+                        isProfilesLoaded = true;
                     }
-                    isProfilesLoaded = true;
+                    else
+                    {
+                        Debug.LogError("No user found with the provided email.");
+                    }
                 }
                 else
                 {
-                    Debug.LogError("Failed to fetch users");
+                    Debug.LogError("Failed to fetch user profile.");
                 }
             }));
         }
     }
 
-    //Display all users
-    private static IEnumerator UnityGetRequest(string url, Action<bool, string> callback = null)
+    //Display user
+    public IEnumerator UnityGetRequest(string url, Action<bool, string> callback = null)
     {
         var request = UnityWebRequest.Get(url);
 
@@ -91,28 +112,8 @@ public class Http : MonoBehaviour
         }
     }
 
-    #region Other
-    private IEnumerator UnityPutRequest(string url, string jsonData, Action<bool, string> callback = null)
-    {
-        jsonData = "{\"name\":\"John\", \"job\":\"Senior Developer\"}";
-
-        var request = UnityWebRequest.Put(url, jsonData);
-
-        yield return request.SendWebRequest();
-
-        if (request.result is UnityWebRequest.Result.ConnectionError or UnityWebRequest.Result.ProtocolError)
-        {
-            Debug.LogError(request.error);
-            callback?.Invoke(false, request.error);
-        }
-        else
-        {
-            Debug.Log(request.downloadHandler.text);
-            callback?.Invoke(true, request.downloadHandler.text);
-        }
-    }
-
-    private IEnumerator UnityDeleteRequest(string url, Action<bool, string> callback = null)
+    //Deletes the Account
+    public IEnumerator UnityDeleteRequest(string url, Action<bool, string> callback = null)
     {
         var request = UnityWebRequest.Delete(url);
 
@@ -130,6 +131,31 @@ public class Http : MonoBehaviour
         }
     }
 
+    //Update the Account for new changes
+    public IEnumerator UnityPutRequest(string url, string jsonData, Action<bool, string> callback = null)
+    {
+        var request = new UnityWebRequest(url, "PUT")
+        {
+            uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonData)),
+            downloadHandler = new DownloadHandlerBuffer()
+        };
+        request.SetRequestHeader("Content-Type", "application/json");
+
+        yield return request.SendWebRequest();
+
+        if (request.result is UnityWebRequest.Result.ConnectionError or UnityWebRequest.Result.ProtocolError)
+        {
+            Debug.LogError(request.error);
+            callback?.Invoke(false, request.error);
+        }
+        else
+        {
+            Debug.Log(request.downloadHandler.text);
+            callback?.Invoke(true, request.downloadHandler.text);
+        }
+    }
+
+    #region Other
     private IEnumerator DownloadImage(string imageUrl, Action<Texture2D> Callback)
     {
         var request = UnityWebRequestTexture.GetTexture(imageUrl);
@@ -156,4 +182,5 @@ public struct Users
     public int id;
     public string name;
     public string email;
+    public string password;
 }
