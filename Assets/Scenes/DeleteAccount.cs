@@ -22,14 +22,6 @@ public class DeleteAccount : MonoBehaviour
         httpScript = FindObjectOfType<Http>();
     }
 
-    /*public void SetReferences(TMP_InputField emailField, TMP_InputField passwordField, Button deleteBtn, TextMeshProUGUI notifMessage)
-    {
-        emailInputField = emailField;
-        passwordInputField = passwordField;
-        deleteButton = deleteBtn;
-        notificationResult = notifMessage;
-    }*/
-
     public void OnDeleteAccount()
     {
         string email = emailInputField.text;
@@ -74,7 +66,8 @@ public class DeleteAccount : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError("No user found with the provided email.");
+                    notificationResult.text = "Invalid inputs.";
+                    StartCoroutine(ClearNotificationAfterDelay(2));
                 }
             }
             else

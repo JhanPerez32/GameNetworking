@@ -26,7 +26,7 @@ public class UpdatePassword : MonoBehaviour
     {
         string newPassword = newPasswordInput.text;
         string enteredEmail = correctEmailInput.text;
-        string loggedInEmail = PlayerPrefs.GetString("LoggedInEmail", string.Empty); // Fetch the logged-in email
+        string loggedInEmail = PlayerPrefs.GetString("LoggedInEmail", string.Empty);
 
         if (string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(enteredEmail))
         {

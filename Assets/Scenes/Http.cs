@@ -45,15 +45,6 @@ public class Http : MonoBehaviour
                         usernameText.text = user[0].name;
                         emailText.text = user[0].email;
 
-                        /*DeleteAccount deleteAccountScript = userEntry.GetComponent<DeleteAccount>();
-
-                        TMP_InputField emailInputField = userEntry.transform.Find("DeleteAccount/Inputs/InputEmailAdd").GetComponent<TMP_InputField>();
-                        TMP_InputField passwordInputField = userEntry.transform.Find("DeleteAccount/Inputs/EnterPassword").GetComponent<TMP_InputField>();
-                        Button deleteButton = userEntry.transform.Find("DeleteAccount/Inputs/DeleteButton").GetComponent<Button>();
-                        TextMeshProUGUI resultDelete = userEntry.transform.Find("DeleteAccount/Inputs/ResultText").GetComponent<TextMeshProUGUI>();
-
-                        deleteAccountScript.SetReferences(emailInputField, passwordInputField, deleteButton, resultDelete);*/
-
                         isProfilesLoaded = true;
                     }
                     else

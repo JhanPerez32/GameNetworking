@@ -45,6 +45,13 @@ public class Register : MonoBehaviour
             return;
         }
 
+        if (passwordInput.text != rewritePasswordInput.text)
+        {
+            notificationResult.text = "Passwords do not match!";
+            StartCoroutine(ClearNotificationAfterDelay(2));
+            return;
+        }
+
         if (passwordInput.text == rewritePasswordInput.text)
         {
             var newUser = new UserAccount()
