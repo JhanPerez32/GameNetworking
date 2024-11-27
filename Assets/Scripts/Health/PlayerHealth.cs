@@ -1,6 +1,12 @@
 using System;
+using System.Text;
 using Fusion;
+using Newtonsoft.Json;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Networking;
+using System.Collections;
+using System.Collections.Generic;
 
 public class PlayerHealth : NetworkBehaviour
 {
@@ -27,6 +33,14 @@ public class PlayerHealth : NetworkBehaviour
 
     private bool isProtected;
 
+    // Kill and Death Stats
+    [Networked] private int kills { get; set; }
+    [Networked] private int deaths { get; set; }
+
+    // UI references
+    public TextMeshProUGUI killText;
+    public TextMeshProUGUI deathText;
+
     public override void Spawned()
     {
         NetworkedHealth = MaxHealth;
@@ -48,18 +62,16 @@ public class PlayerHealth : NetworkBehaviour
         // Wait until the cooldown expires before allowing regeneration
         yield return new WaitForSeconds(regenCooldown);
 
-        Debug.LogWarning("Regenerating");
-
         while (NetworkedHealth < MaxHealth)
         {
             // Regenerate health
             NetworkedHealth = Mathf.Min(NetworkedHealth + regenRate * Time.deltaTime, MaxHealth);
             OnDamageEvent?.Invoke(NetworkedHealth / MaxHealth);
-            yield return null; // Wait for the next frame
+            yield return null;
         }
 
         // Stop regenerating when health is maxed out
-        regenCoroutine = null; // Reset coroutine reference
+        regenCoroutine = null;
     }
 
     void HealthChanged()
@@ -106,7 +118,46 @@ public class PlayerHealth : NetworkBehaviour
         {
             Instantiate(explosionFX, transform.position, Quaternion.identity);
         }
+        deaths++;
+        StartCoroutine(RespawnPlayer());
+        UpdateDeathUI();
+    }
 
-        Runner.Despawn(Object);
+    private IEnumerator RespawnPlayer()
+    {
+        yield return new WaitForSeconds(2f);
+        NetworkedHealth = MaxHealth;
+
+        transform.position = new Vector3(0, 1, 0);
+        Debug.Log("Player respawned!");
+    }
+
+    public void HandleKill()
+    {
+        kills++;
+        UpdateKillUI();
+    }
+
+
+    private void UpdateKillUI()
+    {
+        if (killText != null)
+        {
+            killText.text = $"K: {kills}";
+        }
+    }
+
+    private void UpdateDeathUI()
+    {
+        if (deathText != null)
+        {
+            deathText.text = $"D: {deaths}";
+        }
+    }
+
+    public void SetUIReferences(TextMeshProUGUI killUI, TextMeshProUGUI deathUI)
+    {
+        killText = killUI;
+        deathText = deathUI;
     }
 }

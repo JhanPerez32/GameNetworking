@@ -692,7 +692,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e50d097b02e8447aa27b0f3e801778, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Damage: 10
+  Damage: 25
   PlayerMovement: {fileID: 5724511627485295004}
   tracerPrefab: {fileID: 5410928244671815118, guid: 793a5bb3560b1a94e9f95174cdd2295f,
     type: 3}
@@ -700,7 +700,7 @@ MonoBehaviour:
   delayTimeLeft: 0
   UIGunEnergyBar: {fileID: 0}
   maxGunEnergy: 100
-  gunEnergyCost: 5
+  gunEnergyCost: 1
   currentGunEnergy: 0
   isRefilling: 0
 --- !u!114 &4392312949243510146
@@ -731,11 +731,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   regenRate: 65
-  regenCooldown: 3
+  regenCooldown: 10
   isRegenerating: 0
   playerHitFX: {fileID: 1000011128802252, guid: 96730f8640590934eacb6f860058e7f9,
     type: 3}
   explosionFX: {fileID: 100002, guid: 799e3eff4ab8ad04286b37b1da70ebef, type: 3}
+  killText: {fileID: 0}
+  deathText: {fileID: 0}
 --- !u!1 &5137203261811014778
 GameObject:
   m_ObjectHideFlags: 0
@@ -1031,7 +1033,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 50, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3078466167245629543
 CanvasRenderer:

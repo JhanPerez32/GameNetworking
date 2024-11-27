@@ -2,6 +2,7 @@ using Fusion;
 using UnityEngine;
 using UnityEngine.Serialization;
 
+
 public class PlayerMovement : NetworkBehaviour
 {
     public int PlayerID => Runner.LocalPlayer.PlayerId;
@@ -80,8 +81,6 @@ public class PlayerMovement : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        // FixedUpdateNetwork is only executed on the StateAuthority
-
         if (!_controller.enabled) return;
 
         if (_controller.isGrounded)
@@ -115,7 +114,6 @@ public class PlayerMovement : NetworkBehaviour
 
             _controller.Move(move + _velocity * Runner.DeltaTime);
 
-            //Other Player can also that you are rotating while Idle
             transform.rotation = Quaternion.LookRotation(cameraForward);
 
             NetworkedRotation = transform.rotation;

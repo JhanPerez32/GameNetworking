@@ -108,38 +108,42 @@ app.delete('/users/:id', (req, res) =>{
 })
 
 //
-app.post('/register', (req, res) =>{
+app.post('/register', async (req, res) => {
     try {
-        const {name, email, password} = req.body;
-        if(!email || !name || !password)
-            return res.send('Missing one or more fields');
+        const { name, email, password } = req.body;
 
-        client.query(`SELECT * from users where name = '${name}'`, (err, result)=>{
-            if(err){
-                console.log(err.message);
-            }else{
-                if(result.rows.length > 0){
-                    return res.send('User already exist');
-                }
-            }
-        });
+        // Check if all required fields are present
+        if (!email || !name || !password) {
+            return res.status(400).send('Missing one or more fields');
+        }
 
-        let insertQuery = `insert into users(name, email, password) 
-            values('${name}','${email}','${password}')`
+        // Query to check for existing users with the same name or email
+        const checkUserQuery = `
+            SELECT * 
+            FROM users 
+            WHERE name = $1 OR email = $2
+        `;
 
-        client.query(insertQuery, (err, result)=>{
-            if(!err){
-                res.send('User registered succesfully')
-            }else{
-                console.log(err.message);
-            }
-        });
+        const checkResult = await client.query(checkUserQuery, [name, email]);
 
-    }catch (error){
-        console.error('Regsiter Error:', error);
-        res.send(500).json({error: 'Server error'});
+        if (checkResult.rows.length > 0) {
+            return res.status(409).send('User with the same email or username already exists');
+        }
+
+        // Insert the new user if no duplicates were found
+        const insertQuery = `
+            INSERT INTO users (name, email, password) 
+            VALUES ($1, $2, $3)
+        `;
+
+        await client.query(insertQuery, [name, email, password]);
+
+        res.status(201).send('Registration Successful');
+    } catch (error) {
+        console.error('Register Error:', error);
+        res.status(500).json({ error: 'Server error' });
     }
-})
+});
 
 app.post('/login', (req, res)=>{
     try {
@@ -156,7 +160,7 @@ app.post('/login', (req, res)=>{
 
                 }else{
                     const user = result.rows[0];
-                    const token = jwt.sign({userId: user.name, email: user.email}, JWT_SECRET, {expiresIn: '24h'});
+                    const token = jwt.sign({userId: user.name, email: user.email}, JWT_SECRET, {expiresIn: '30d'});
                     res.json({token});
                 }
             }
@@ -165,3 +169,74 @@ app.post('/login', (req, res)=>{
         console.error('Login Error', error);
     }
 })
+
+app.get('/leaderboard', authenticateToken, (req, res) => {
+    const query = `
+        SELECT id, name, kills, deaths, 
+               CASE WHEN deaths = 0 THEN kills ELSE CAST(kills AS FLOAT) / deaths END AS kd_ratio 
+        FROM users 
+        ORDER BY kd_ratio DESC 
+        LIMIT 10;
+    `;
+
+    client.query(query, (err, result) => {
+        if (!err) {
+            res.json(result.rows);
+        } else {
+            console.log(err.message);
+            res.status(500).send('Failed to fetch leaderboard');
+        }
+    });
+});
+
+
+/*
+app.put('/users/:id/score', authenticateToken, (req, res) => {
+    const { kills, deaths } = req.body;
+    const userId = req.params.id;
+
+    // Input validation
+    if (typeof kills !== 'number' || typeof deaths !== 'number') {
+        return res.status(400).send('Kills and deaths must be numbers');
+    }
+
+    const updateQuery = `
+        UPDATE users 
+        SET kills = $1, deaths = $2 
+        WHERE id = $3
+        RETURNING name, kills, deaths;
+    `;
+
+    client.query(updateQuery, [kills, deaths, userId], (err, result) => {
+        if (!err) {
+            if (result.rows.length > 0) {
+                res.json(result.rows[0]);  // Return updated stats
+            } else {
+                res.status(404).send('User not found');
+            }
+        } else {
+            console.log(err.message);
+            res.status(500).send('Failed to update score');
+        }
+    });
+});
+
+app.put('/users/updateKillDeath/:email', async (req, res) => {
+    const { kills, deaths } = req.body;
+    const { email } = req.params;
+    
+    try {
+        const user = await User.findOne({ email: email });
+        if (user) {
+            user.kills = kills;
+            user.deaths = deaths;
+            await user.save();
+            return res.status(200).json({ message: "Stats updated successfully" });
+        } else {
+            return res.status(404).json({ message: "User not found" });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error updating stats" });
+    }
+});*/

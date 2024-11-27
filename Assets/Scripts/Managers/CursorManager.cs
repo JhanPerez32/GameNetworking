@@ -7,6 +7,8 @@ public class CursorManager : MonoBehaviour
     public static CursorManager Instance { get; private set; }
     private bool isCursorLocked = true;
 
+    public KeyCode cursorLockKey = KeyCode.Alpha1;
+
     private void Awake()
     {
         if (Instance == null)
@@ -23,7 +25,7 @@ public class CursorManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(cursorLockKey))
         {
             ToggleCursorLock();
         }
